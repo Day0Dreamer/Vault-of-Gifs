@@ -1,0 +1,39 @@
+GifOptimization
+==============================================================================================================================
+40359Kb	SteffonDiggsEmoji02280x28030FPS.avi
+1155Kb	video2gif.bat C:\Python\Vault_Of_Gifs\SteffonDiggsEmoji02280x28030FPS.avi -q 1 -o vvv.gif -f 30
+623Kb	gifsicle.exe -O3 -d=3 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+==============================================================================================================================
+		ffmpeg -i C:\Python\Vault_Of_Gifs\SteffonDiggsEmoji02280x28030FPS.avi -r 30 -f image2 image-%03d.png
+1308Kb 	convert image-001.png image-002.png image-003.png image-004.png image-005.png image-006.png image-007.png image-008.png image-009.png image-010.png image-011.png image-012.png image-013.png image-014.png image-015.png image-016.png image-017.png image-018.png image-019.png image-020.png image-021.png image-022.png image-023.png image-024.png image-025.png image-026.png image-027.png image-028.png image-029.png image-030.png image-031.png image-032.png image-033.png image-034.png image-035.png image-036.png image-037.png image-038.png image-039.png image-040.png image-041.png image-042.png image-043.png image-044.png image-045.png image-046.png image-047.png image-048.png image-049.png image-050.png image-051.png image-052.png image-053.png image-054.png image-055.png image-056.png image-057.png image-058.png image-059.png image-060.png image-061.png image-062.png image-063.png image-064.png image-065.png image-066.png image-067.png image-068.png image-069.png image-070.png image-071.png image-072.png image-073.png image-074.png image-075.png image-076.png image-077.png image-078.png image-079.png image-080.png image-081.png image-082.png image-083.png image-084.png image-085.png image-086.png image-087.png image-088.png image-089.png image-090.png image-091.png image-092.png image-093.png image-094.png image-095.png image-096.png image-097.png image-098.png image-099.png image-100.png image-101.png image-102.png image-103.png image-104.png image-105.png image-106.png image-107.png image-108.png image-109.png image-110.png image-111.png image-112.png image-113.png image-114.png image-115.png image-116.png image-117.png image-118.png image-119.png image-120.png image-121.png image-122.png image-123.png image-124.png image-125.png image-126.png image-127.png image-128.png image-129.png image-130.png image-131.png image-132.png image-133.png image-134.png image-135.png image-136.png image-137.png image-138.png image-139.png image-140.png image-141.png image-142.png image-143.png image-144.png image-145.png image-146.png image-147.png image-148.png image-149.png image-150.png image-151.png image-152.png image-153.png image-154.png image-155.png image-156.png image-157.png image-158.png image-159.png image-160.png image-161.png image-162.png image-163.png image-164.png image-165.png image-166.png image-167.png image-168.png image-169.png image-170.png -delay 3 -layers OptimizeTransparency vvv.gif
+
+634Kb	gifsicle.exe -O3 -d=3 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+==============================================================================================================================
+40359Kb	SteffonDiggsEmoji02280x28030FPS.avi
+39347Kb	convert -delay 30 SteffonDiggsEmoji02280x28030FPS.avi u.miff
+1315Kb	convert u.miff -layers OptimizeTransparency vvv.gif
+
+827Kb	gifsicle.exe     --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+665Kb	gifsicle.exe -O1 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+640Kb	gifsicle.exe -O2 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+637Kb	gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+==============================================================================================================================
+40359Kb	SteffonDiggsEmoji02280x28030FPS.avi
+39347Kb	convert -delay 30 SteffonDiggsEmoji02280x28030FPS.avi u.miff
+1315Kb	convert u.miff vvv.gif
+
+646Kb	gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+==============================================================================================================================
+40359Kb	SteffonDiggsEmoji02280x28030FPS.avi
+39347Kb	convert -delay 30 SteffonDiggsEmoji02280x28030FPS.avi u.miff
+1193Kb	convert u.miff -layers OptimizeFrame vvv.gif
+
+644Kb	gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+==============================================================================================================================
+40359Kb	SteffonDiggsEmoji02280x28030FPS.avi
+39347Kb	convert -delay 30 SteffonDiggsEmoji02280x28030FPS.avi u.miff
+18133Kb	convert u.miff -layers OptimizeFrame vvv.miff
+1262Kb	convert vvv.miff -layers OptimizeTransparency vvv.gif
+
+638Kb	gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy=26 --use-colormap table.txt vvv.gif -o vvvlossy.gif
+==============================================================================================================================

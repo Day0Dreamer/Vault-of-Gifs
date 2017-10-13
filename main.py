@@ -104,7 +104,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             minimal_window_size()
 
         self.btn_top3.setEnabled(True)
-        self.btn_top3.clicked.connect(self.test)
+        # self.btn_top3.clicked.connect(self.test)
 
         self.console = QtGui.QTextBrowser(self)
         self.layout3in1.addWidget(self.console)
@@ -266,25 +266,17 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                     output_file=output_file,
                     delay=3)
             else:
-                self.worker = worker()  # create worker object
-                self.thread = QtCore.QThread()  # create a thread
-                self.worker.moveToThread(self.thread)  # assign worker to the thread
-                @self.thread.started.connect
-                def xxx():
-                    self.worker.gifsicle(
-                        input_file=selected_file,
-                        lossy_factor=lossy_factor,
-                        color_map=color_table,
-                        output_file=output_file,
-                        delay=3)
-                @self.worker.finish_signal.connect
-                def quit_thread():
-                    self.thread.quit()
-                @self.worker.finish_signal.connect
-                def load280_decorated():
-                    print ('Finish signal received:', time.time())
-                    load280(os.path.splitext(working_file)[0] + '.tmp')
-                self.thread.start()
+                self.gifsicle(
+                    input_file=selected_file,
+                    lossy_factor=lossy_factor,
+                    color_map=color_table,
+                    output_file=output_file,
+                    delay=3)
+            # @self.worker.finish_signal.connect
+            # def load280_decorated():
+            #     print('Finish signal received:', time.time())
+            load280(os.path.splitext(working_file)[0] + '.tmp')
+
 
                 # self.gifsicle(
                 #     input_file=selected_file,
@@ -409,40 +401,41 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
     def console_add(self, log_input):
         self.console.append(str(log_input).rstrip())
 
-    # def launch_process(self, command='ping.exe'):
-    #     self.slider_quality136.setEnabled(False)
-    #     self.slider_quality280.setEnabled(False)
-    #     self.spin_quality136.setEnabled(False)
-    #     self.spin_quality280.setEnabled(False)
-    #     self.btn_update136.setEnabled(False)
-    #     self.btn_update280.setEnabled(False)
-    #     self.proc = QtCore.QProcess()
-    #     self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-    #     @self.proc.finished.connect
-    #     def finished():
-    #         self.slider_quality136.setEnabled(True)
-    #         self.slider_quality280.setEnabled(True)
-    #         self.spin_quality136.setEnabled(True)
-    #         self.spin_quality280.setEnabled(True)
-    #         self.btn_update136.setEnabled(True)
-    #         self.btn_update280.setEnabled(True)
-    #         # self.console_add('Me finished')
-    #
-    #     @self.proc.readyRead.connect
-    #     def read_out():
-    #         out = self.proc.readAll()
-    #         self.console.append(str(out))
-    #     time1 = time.time()
-    #     self.proc.start(command)
-    #     # self.proc.startDetached(command)
-    #     # self.proc.start('ffmpeg.exe')
-    #     # self.proc.start('gifsicle.exe --help')
-    #     # self.proc.start('ping.exe')
-    #     self.proc.waitForFinished()
-    #     time2 = time.time()
-    #     timer = 'Last subroutine took {} msec'.format(str(round(((time2-time1)*1000),2)))
-    #     self.console_add(timer)
-    #     self.statusbar.showMessage(timer)
+    def launch_process(self, command='ping.exe'):
+        self.slider_quality136.setEnabled(False)
+        self.slider_quality280.setEnabled(False)
+        self.spin_quality136.setEnabled(False)
+        self.spin_quality280.setEnabled(False)
+        self.btn_update136.setEnabled(False)
+        self.btn_update280.setEnabled(False)
+        self.proc = QtCore.QProcess()
+        self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+
+        @self.proc.finished.connect
+        def finished():
+            self.slider_quality136.setEnabled(True)
+            self.slider_quality280.setEnabled(True)
+            self.spin_quality136.setEnabled(True)
+            self.spin_quality280.setEnabled(True)
+            self.btn_update136.setEnabled(True)
+            self.btn_update280.setEnabled(True)
+            self.console_add('Me finished')
+
+        @self.proc.readyRead.connect
+        def read_out():
+            out = self.proc.readAll()
+            self.console.append(str(out))
+        time1 = time.time()
+        self.proc.start(command)
+        # self.proc.startDetached(command)
+        # self.proc.start('ffmpeg.exe')
+        # self.proc.start('gifsicle.exe --help')
+        # self.proc.start('ping.exe')
+        # self.proc.waitForFinished()
+        time2 = time.time()
+        timer = 'Last subroutine took {} msec'.format(str(round(((time2-time1)*1000),2)))
+        self.console_add(timer)
+        self.statusbar.showMessage(timer)
 
     def gifsicle(self, delay, lossy_factor, color_map, input_file, output_file=None):
         if output_file is None:
@@ -500,18 +493,18 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 lossy_file_size = os.path.getsize(output_file)
                 self.console_add('({}Kb)'.format(round(lossy_file_size/1024,2)))
 
-    def test(self):
-        self.worker = worker()
-        self.thread = QtCore.QThread()
-        self.worker.moveToThread(self.thread)
-        @self.thread.started.connect
-        def xxx():
-            self.worker.start(self.list_videoslist.selectedItems()[0].data(ITEM_EMOJI_OBJECT))
-        self.worker.finish_signal.connect(self.thread.quit)
-        self.thread.start()
+        self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        @self.proc.readyRead.connect
+        def read_out():
+            out = self.proc.readAll()
+            w.console.append(str(out))
+            print(out)
+        self.proc.start(command)
+        # self.proc.waitForFinished()
+        # self.finish_signal.emit()
+        self.proc.finished.connect(lambda *a: self.finish_signal.emit())
 
-    def text(self):
-        print('text')
+
 
 ITEM_EMOJI_OBJECT =  0x100
 ITEM_NAME =          0x101
@@ -573,19 +566,6 @@ class worker(QtCore.QObject):
     def __init__(self):
         super(worker, self).__init__()
         self.proc = QtCore.QProcess()
-
-    def launch_process(self, command):
-        print('Thread run')
-
-        self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-        @self.proc.readyRead.connect
-        def read_out():
-            out = self.proc.readAll()
-            w.console.append(str(out))
-            print(out)
-        self.proc.start(command)
-        # self.proc.waitForFinished()
-        self.finish_signal.emit()
 
     def gifsicle(self, delay, lossy_factor, color_map, input_file, output_file=None):
         print('Thread run (gifsicle)')

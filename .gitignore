@@ -1,9 +1,12 @@
 .idea
-*.pyc
 __pycache__
+input
+*.pyc
 *.avi
 *.zip
 *.7z
 *.rar
 *.gif
 *.lnk
+*.miff
+*.tmp

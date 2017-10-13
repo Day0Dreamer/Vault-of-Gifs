@@ -14,15 +14,15 @@ flag_convert_30_to_29dot97 = True
 
 
 def gifs_in_folder():
-    return [os.path.join(os.path.abspath(os.path.curdir), gif) for gif in os.listdir() if '.gif' in gif]
+    return [os.path.join(os.path.abspath('./input'), gif) for gif in os.listdir('input') if '.gif' in gif]
 
 
 def acts_in_folder():
-    return [os.path.join(os.path.abspath(os.path.curdir), act) for act in os.listdir() if '.act' in act]
+    return [os.path.join(os.path.abspath('./act'), act) for act in os.listdir('act') if '.act' in act]
 
 
 def avis_in_folder():
-    return [os.path.join(os.path.abspath(os.path.curdir), avi) for avi in os.listdir() if '.avi' in avi]
+    return [os.path.join(os.path.abspath('./input'), avi) for avi in os.listdir('input') if '.avi' in avi]
 
 
 def emoji_list():
@@ -154,7 +154,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 load136(value)
                 self.original_136_gif = value
             elif '280' in value:
-                vid280 = load280(value)
+                vid280 = self.load280(value)
                 self.original_280_gif = value
                 if vid280:
                     self.statusbar.showMessage('280px: Gif is loaded')
@@ -250,6 +250,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             btn_update280_clicked()
 
         def btn_update280_clicked():
+            self.source = 'btn_update280'
             # selected_file = self.list_videoslist.selectedItems()[0].text().replace('avi', 'gif')
             selected_file = os.path.splitext(self.original_280_gif)[0] + '.gif'
             working_file = self.movie280.fileName()
@@ -264,18 +265,20 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                     lossy_factor=lossy_factor,
                     color_map=color_table,
                     output_file=output_file,
-                    delay=3)
+                    delay=3,
+                    source=self.source)
             else:
                 self.gifsicle(
                     input_file=selected_file,
                     lossy_factor=lossy_factor,
                     color_map=color_table,
                     output_file=output_file,
-                    delay=3)
+                    delay=3,
+                    source=self.source)
             # @self.worker.finish_signal.connect
             # def load280_decorated():
             #     print('Finish signal received:', time.time())
-            load280(os.path.splitext(working_file)[0] + '.tmp')
+            # load280(os.path.splitext(working_file)[0] + '.tmp')
 
 
                 # self.gifsicle(
@@ -346,17 +349,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             minimal_window_size()
 
         # ################################# LOADERS ################################## #
-        def load280(file280):
-            self.btn_playpause280.setChecked(False)
-            self.btn_fb280.setEnabled(True)
-            self.btn_playpause280.setEnabled(True)
-            self.btn_ff280.setEnabled(True)
-            self.layout_gif280.setTitle(file280)
-            self.movie280 = QtGui.QMovie(file280)
-            self.gifplayer280.setMovie(self.movie280)
-            self.movie280.setSpeed(self.spin_speed280.value()*100)
-            self.movie280.start()
-            return self.movie280.isValid()
+
 
         def load136(file136):
             self.btn_playpause136.setChecked(False)
@@ -398,10 +391,25 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 #
                 # lossy
 
+        self.source = None
+
+    def load280(self, file280):
+        self.btn_playpause280.setChecked(False)
+        self.btn_fb280.setEnabled(True)
+        self.btn_playpause280.setEnabled(True)
+        self.btn_ff280.setEnabled(True)
+        self.layout_gif280.setTitle(file280)
+        self.movie280 = QtGui.QMovie(file280)
+        self.gifplayer280.setMovie(self.movie280)
+        self.movie280.setSpeed(self.spin_speed280.value()*100)
+        self.movie280.start()
+        return self.movie280.isValid()
+
     def console_add(self, log_input):
         self.console.append(str(log_input).rstrip())
 
-    def launch_process(self, command='ping.exe'):
+    def launch_process(self, command, source):
+        print('Process has launched')
         self.slider_quality136.setEnabled(False)
         self.slider_quality280.setEnabled(False)
         self.spin_quality136.setEnabled(False)
@@ -419,12 +427,19 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             self.spin_quality280.setEnabled(True)
             self.btn_update136.setEnabled(True)
             self.btn_update280.setEnabled(True)
+            recognize_source()
             self.console_add('Me finished')
 
         @self.proc.readyRead.connect
         def read_out():
             out = self.proc.readAll()
             self.console.append(str(out))
+            print('readyRead')
+
+        def recognize_source():
+            if source == 'btn_update280':
+                self.load280(os.path.splitext(self.movie280.fileName())[0] + '.tmp')
+
         time1 = time.time()
         self.proc.start(command)
         # self.proc.startDetached(command)
@@ -437,12 +452,12 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         self.console_add(timer)
         self.statusbar.showMessage(timer)
 
-    def gifsicle(self, delay, lossy_factor, color_map, input_file, output_file=None):
+    def gifsicle(self, delay, lossy_factor, color_map, input_file, source, output_file=None):
         if output_file is None:
             output_file = input_file
         cmd = 'gifsicle.exe -O3 -d={} --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}'\
             .format(delay, lossy_factor, color_map, input_file, output_file)
-        self.launch_process(cmd)
+        self.launch_process(cmd, source)
 
     def ffmpeg(self, video, fps=30):
         cmd = 'video2gif.bat {} -y -f {}'.format(video, fps)
@@ -503,6 +518,8 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         # self.proc.waitForFinished()
         # self.finish_signal.emit()
         self.proc.finished.connect(lambda *a: self.finish_signal.emit())
+
+
 
 
 

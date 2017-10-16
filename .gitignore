@@ -10,3 +10,5 @@ input
 *.lnk
 *.miff
 *.tmp
+*.exe
+*.yml

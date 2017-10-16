@@ -104,7 +104,9 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             minimal_window_size()
 
         self.btn_top3.setEnabled(True)
-        # self.btn_top3.clicked.connect(self.test)
+        task_x = TasksPool()
+        task_x.add
+        self.btn_top3.clicked.connect(taskX)
 
         self.console = QtGui.QTextBrowser(self)
         self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
@@ -539,17 +541,34 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 lossy_file_size = os.path.getsize(output_file)
                 self.console_add('({}Kb)'.format(round(lossy_file_size/1024, 2)))
 
-        # @self.proc.readyRead.connect
-        # def read_out():
-        #     out = self.proc.readAll()
-        #     w.console.append(str(out))
-        #     print(out)
-        # self.proc.start(command)
-        # # self.proc.waitForFinished()
-        # # self.finish_signal.emit()
-        # self.proc.finished.connect(lambda *a: self.finish_signal.emit())
 
+    class TasksPool(QtCore.QObject):
+        startNextTaskSignal = QtCore.Signal()
+        alltasksCompleteSignal = QtCore.Signal()
 
+        def __init__(self):
+            super().__init__()
+            self.tasks_pool = []
+            self.process = None
+            self.startNextTaskSignal.connect(self.execute_task)
+            self.alltasksCompleteSignal.connect(self.tasks_copmlete)
+
+        def add_task(self, cmd):
+            self.tasks_pool.append(cmd)
+            self.startNextTaskSignal.emit()
+
+        def execute_task(self):
+            if self.process and self.process.isOpen():
+                return
+            if not self.tasks:
+                self.alltasksCompleteSignal.emit()
+            next_task = self.tasks_pool.pop(0)
+            self.process = QtCore.QProcess()
+            self.process.finished.connect(self.startNextTaskSignal.emit)
+            self.process.start(next_task)
+
+        def tasks_copmlete(self):
+            print('ALL TASKS COMPLETE')
 
 
 class Emoji(object):
@@ -605,16 +624,9 @@ if __name__ == '__main__':
     app = QtGui.QApplication([])
     w = DDgui()
 
-    # item = QtGui.QListWidgetItem('qwe')
-    # item.setBackground(QtGui.QColor(255, 0, 0, 16))
-    # item.setData(0x100,'asdasd')
-    # print(item.data(0x100))
-    # w.list_videoslist.addItem(item)
-
     update_video_list(w)
 
     # Add acts from folder to list widget
-    # w.dropdown_colortable.clear()
     w.dropdown_colortable.addItems(acts_in_folder())
 
     w.show()

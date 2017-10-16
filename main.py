@@ -10,7 +10,18 @@ import os
 
 # ################################# CONFIG ################################### #
 flag_convert_30_to_29dot97 = True
+flag_show_message_bar_timer = False
 # ############################### END CONFIG ################################# #
+# ################################ CONSTANTS ################################# #
+ITEM_EMOJI_OBJECT =  0x100
+ITEM_NAME =          0x101
+ITEM_VERSION =       0x102
+ITEM_RESOLUTION =    0x103
+ITEM_FPS =           0x104
+ITEM_LOSSY =         0x105
+ITEM_DAMAGED =       0x105
+ITEM_FULL_PATH =     0x106
+# ############################### END CONSTANTS ############################## #
 
 
 def gifs_in_folder():
@@ -50,17 +61,6 @@ def update_video_list(qt_window):
             item.setBackground(QtGui.QColor(255, 255, 255, 255))
             emoji_object.has_raw_gif = False
         qt_window.list_videoslist.addItem(item)
-
-def timing(f):
-    def wrap(*args):
-        time1 = time.time()
-        ret = f(*args)
-        time2 = time.time()
-        print('{} function took {} ms'.format(f.__name__, (time2-time1)*1000.0))
-        return ret
-    return wrap
-
-
 
 
 class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
@@ -107,6 +107,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         # self.btn_top3.clicked.connect(self.test)
 
         self.console = QtGui.QTextBrowser(self)
+        self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.layout3in1.addWidget(self.console)
         self.console.setMinimumWidth(500)
         self.console.setVisible(False)
@@ -130,12 +131,12 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 self.list_gifslist.addItem(i.filename)
 
         @self.list_videoslist.itemDoubleClicked.connect
-        def avi_double_clicked(item):
-            if not item.data(ITEM_EMOJI_OBJECT).has_raw_gif:
+        def avi_double_clicked(video_list_item):
+            if not video_list_item.data(ITEM_EMOJI_OBJECT).has_raw_gif:
                 self.statusbar.showMessage('Generating the gif')
-                self.ffmpeg(item.data(ITEM_FULL_PATH))
-            gif_double_clicked(item)
-            update_video_list(self)
+                self.ffmpeg(video_list_item.data(ITEM_FULL_PATH))
+            else:
+                gif_double_clicked(video_list_item)
             # print(item.data(ITEM_FULL_PATH))
 
         @self.list_gifslist.itemDoubleClicked.connect
@@ -145,17 +146,21 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         self.original_280_gif = None
         self.original_136_gif = None
 
-        def gif_double_clicked(value):
-            value = value.data(ITEM_FULL_PATH)
+        def gif_double_clicked(video_list_item):
+            """Takes an item of videos list, reads ITEM_FULL_PATH,
+            replaces extension with .gif and loads it to viewport"""
+            video_file_path = video_list_item.data(ITEM_FULL_PATH)
             # Launch avi's gif counterparts
-            if os.path.splitext(value)[1] != 'gif':
-                value = os.path.splitext(value)[0] + '.gif'
-            if '136' in value:
-                load136(value)
-                self.original_136_gif = value
-            elif '280' in value:
-                vid280 = self.load280(value)
-                self.original_280_gif = value
+            if os.path.splitext(video_file_path)[1] != 'gif':
+                video_file_path = os.path.splitext(video_file_path)[0] + '.gif'
+            # If it is 136 file > load it to 136 viewport
+            if '136' in video_file_path:
+                load136(video_file_path)
+                self.original_136_gif = video_file_path
+            # If it is 280 file > load it to 280 viewport
+            elif '280' in video_file_path:
+                vid280 = self.load280(video_file_path)
+                self.original_280_gif = video_file_path
                 if vid280:
                     self.statusbar.showMessage('280px: Gif is loaded')
 
@@ -408,8 +413,9 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
     def console_add(self, log_input):
         self.console.append(str(log_input).rstrip())
 
-    def launch_process(self, command, source):
-        print('Process has launched')
+    def launch_process(self, command, source=None, working_file=''):
+        self.console_add('='*50+'\n' + 'Launched ' + command)
+        print('Launched', command)
         self.slider_quality136.setEnabled(False)
         self.slider_quality280.setEnabled(False)
         self.spin_quality136.setEnabled(False)
@@ -428,17 +434,30 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             self.btn_update136.setEnabled(True)
             self.btn_update280.setEnabled(True)
             recognize_source()
-            self.console_add('Me finished')
+            time2 = time.time()
+            timer = 'Last subroutine took {} msec'.format(str(round(((time2-time1)*1000),2)))
+            self.console_add(timer)
+            if flag_show_message_bar_timer:
+                self.statusbar.showMessage(timer)
+            self.console_add('Finished ' + command + '\n'+'='*50)
+            print('Finished ' + command)
 
         @self.proc.readyRead.connect
         def read_out():
             out = self.proc.readAll()
             self.console.append(str(out))
-            print('readyRead')
+            print('|', str(out), sep='', end='')
 
         def recognize_source():
             if source == 'btn_update280':
                 self.load280(os.path.splitext(self.movie280.fileName())[0] + '.tmp')
+                size = str(round(os.path.getsize(self.movie280.fileName()) / 1024, 2))
+                message = '280px: Lossy factor of {} results in {}Kb of size'.format(self.spin_quality280.text(), size)
+                self.statusbar.showMessage(message)
+                self.console_add(message)
+            if source == 'ffmpeg280':
+                self.load280(os.path.splitext(working_file)[0] + '.gif')
+                update_video_list(self)
 
         time1 = time.time()
         self.proc.start(command)
@@ -447,26 +466,33 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         # self.proc.start('gifsicle.exe --help')
         # self.proc.start('ping.exe')
         # self.proc.waitForFinished()
-        time2 = time.time()
-        timer = 'Last subroutine took {} msec'.format(str(round(((time2-time1)*1000),2)))
-        self.console_add(timer)
-        self.statusbar.showMessage(timer)
 
-    def gifsicle(self, delay, lossy_factor, color_map, input_file, source, output_file=None):
+    def gifsicle(self, delay, lossy_factor, color_map, input_file, source=None, output_file=None):
+        """Converts string a gif to a lossy gif
+        input_file is a full path
+        Returns output_file, which by default is equal to input_file"""
         if output_file is None:
             output_file = input_file
         cmd = 'gifsicle.exe -O3 -d={} --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}'\
             .format(delay, lossy_factor, color_map, input_file, output_file)
         self.launch_process(cmd, source)
+        return output_file
 
-    def ffmpeg(self, video, fps=30):
-        cmd = 'video2gif.bat {} -y -f {}'.format(video, fps)
-        self.launch_process(cmd)
-        return os.path.splitext(video)[0]+'.gif'
+    def ffmpeg(self, input_file, fps=30):
+        """Converts any video file to a gif
+        input_file is a full path
+        Returns input_file with .gif extension"""
+        if flag_convert_30_to_29dot97 and fps == 30:
+            fps = 29.97
+        cmd = 'video2gif.bat {} -y -f {}'.format(input_file, fps)
+        if '280' in input_file:
+            self.launch_process(cmd, 'ffmpeg280', input_file)
+        elif '136' in input_file:
+            self.launch_process(cmd, 'ffmpeg136', input_file)
+
+        return os.path.splitext(input_file)[0] + '.gif'
 
     def export(self, emoji):
-        if flag_convert_30_to_29dot97:
-            pass
         self.console_add('Exporting: {}'.format(emoji.name))
 
         # Avi to uncompressed gif
@@ -484,19 +510,24 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         color_map = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
         output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS_lossy.gif'
                                    .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-        self.console_add(output_file)
+        self.console_add('output file = ' + output_file)
         self.gifsicle(delay=int(100/int(''.join((digit for digit in emoji.fps if digit.isdigit())))),
                       lossy_factor=lossy_factor,
                       color_map=color_map,
                       input_file=raw_gif,
                       output_file=output_file)
+        if os.path.exists(output_file):
+            self.console_add(output_file + ' exists')
+        else:
+            self.console_add(output_file + ' doesnt exist')
 
         # Uncompressed gif to damaged gif
         if emoji.resolution == '280x280':
             lossy_file_size = os.path.getsize(output_file)
             output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS_lossy_damaged.gif'
                                        .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-            while lossy_file_size > 500*1024:
+            while lossy_file_size > 500*1024 and lossy_factor < 5:
+                self.console_add('Trying to write '+ output_file + '\n lossy factor is ' + str(lossy_factor))
                 lossy_factor += 1
                 self.console_add('Trying lossy factor of {}'.format(lossy_factor))
 
@@ -506,31 +537,20 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                               input_file=raw_gif,
                               output_file=output_file)
                 lossy_file_size = os.path.getsize(output_file)
-                self.console_add('({}Kb)'.format(round(lossy_file_size/1024,2)))
+                self.console_add('({}Kb)'.format(round(lossy_file_size/1024, 2)))
 
-        self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-        @self.proc.readyRead.connect
-        def read_out():
-            out = self.proc.readAll()
-            w.console.append(str(out))
-            print(out)
-        self.proc.start(command)
-        # self.proc.waitForFinished()
-        # self.finish_signal.emit()
-        self.proc.finished.connect(lambda *a: self.finish_signal.emit())
-
+        # @self.proc.readyRead.connect
+        # def read_out():
+        #     out = self.proc.readAll()
+        #     w.console.append(str(out))
+        #     print(out)
+        # self.proc.start(command)
+        # # self.proc.waitForFinished()
+        # # self.finish_signal.emit()
+        # self.proc.finished.connect(lambda *a: self.finish_signal.emit())
 
 
 
-
-ITEM_EMOJI_OBJECT =  0x100
-ITEM_NAME =          0x101
-ITEM_VERSION =       0x102
-ITEM_RESOLUTION =    0x103
-ITEM_FPS =           0x104
-ITEM_LOSSY =         0x105
-ITEM_DAMAGED =       0x105
-ITEM_FULL_PATH =     0x106
 
 class Emoji(object):
     def __init__(self, filename):
@@ -578,22 +598,6 @@ class Emoji(object):
         return 'Name: {} \nversion: {} \nresolution: {} \nfps: {} \nlossy: {} \ndamaged: {}' \
             .format(self.name, self.version, self.resolution, self.fps, self.lossy, self.damaged)
 
-class worker(QtCore.QObject):
-    finish_signal = QtCore.Signal()
-    def __init__(self):
-        super(worker, self).__init__()
-        self.proc = QtCore.QProcess()
-
-    def gifsicle(self, delay, lossy_factor, color_map, input_file, output_file=None):
-        print('Thread run (gifsicle)')
-        if output_file is None:
-            output_file = input_file
-        cmd = 'gifsicle.exe -O3 -d={} --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}' \
-            .format(delay, lossy_factor, color_map, input_file, output_file)
-        self.launch_process(cmd)
-
-
-        # self.finish_signal.emit()
 
 if __name__ == '__main__':
     # [ print('\n' + i.get_info()) for i in emojis_list]

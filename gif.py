@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Python\Vault_Of_Gifs\gif.ui'
 #
-# Created: Tue Oct 10 20:06:57 2017
+# Created: Tue Oct 17 06:52:13 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(926, 880)
+        MainWindow.resize(1072, 765)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.centralwidget)
@@ -66,6 +66,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.tab_gifs)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.list_gifslist = QtGui.QListWidget(self.tab_gifs)
+        self.list_gifslist.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.list_gifslist.setObjectName("list_gifslist")
         self.verticalLayout_5.addWidget(self.list_gifslist)
         self.tabWidget.addTab(self.tab_gifs, "")
@@ -437,7 +438,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.layout3in1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 926, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1072, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -487,6 +488,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.spin_scale136, QtCore.SIGNAL("valueChanged(int)"), self.slider_scale136.setValue)
         QtCore.QObject.connect(self.slider_scale136, QtCore.SIGNAL("valueChanged(int)"), self.spin_scale136.setValue)
         QtCore.QObject.connect(self.slider_quality136, QtCore.SIGNAL("valueChanged(int)"), self.spin_quality136.setValue)
+        QtCore.QObject.connect(self.slider_quality280, QtCore.SIGNAL("valueChanged(int)"), self.spin_quality280.setValue)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

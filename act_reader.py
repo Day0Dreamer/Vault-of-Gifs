@@ -1,5 +1,7 @@
 # encoding: utf-8
 # act_file = 'table.act'
+from os import path
+
 def act_to_list(act_file):
     with open(act_file, 'rb') as act:
         raw_data = act.readline()
@@ -29,7 +31,7 @@ def act_to_list(act_file):
 
 def create_gifsicle_colormap(act_file, output=None):
     if output is None:
-        output = act_file[:-3]+'txt'
+        output = path.join('.\\temp', path.splitext(path.split(act_file)[1])[0] + '.txt')
     with open(output, 'w') as txt:
         txt.writelines(act_to_list(act_file)[0])
     return output

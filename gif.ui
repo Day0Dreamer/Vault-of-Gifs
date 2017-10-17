@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>926</width>
-    <height>880</height>
+    <width>1072</width>
+    <height>765</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,7 +111,11 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <widget class="QListWidget" name="list_gifslist"/>
+             <widget class="QListWidget" name="list_gifslist">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -940,7 +944,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>926</width>
+     <width>1072</width>
      <height>21</height>
     </rect>
    </property>
@@ -1021,12 +1025,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>413</x>
-     <y>750</y>
+     <x>433</x>
+     <y>611</y>
     </hint>
     <hint type="destinationlabel">
-     <x>602</x>
-     <y>751</y>
+     <x>494</x>
+     <y>610</y>
     </hint>
    </hints>
   </connection>
@@ -1037,12 +1041,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>413</x>
-     <y>780</y>
+     <x>433</x>
+     <y>643</y>
     </hint>
     <hint type="destinationlabel">
-     <x>602</x>
-     <y>781</y>
+     <x>494</x>
+     <y>640</y>
     </hint>
    </hints>
   </connection>
@@ -1053,12 +1057,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>602</x>
-     <y>751</y>
+     <x>494</x>
+     <y>610</y>
     </hint>
     <hint type="destinationlabel">
-     <x>413</x>
-     <y>750</y>
+     <x>433</x>
+     <y>611</y>
     </hint>
    </hints>
   </connection>
@@ -1069,12 +1073,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>723</x>
-     <y>780</y>
+     <x>795</x>
+     <y>643</y>
     </hint>
     <hint type="destinationlabel">
-     <x>903</x>
-     <y>781</y>
+     <x>847</x>
+     <y>640</y>
     </hint>
    </hints>
   </connection>
@@ -1085,12 +1089,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>723</x>
-     <y>750</y>
+     <x>795</x>
+     <y>611</y>
     </hint>
     <hint type="destinationlabel">
-     <x>903</x>
-     <y>751</y>
+     <x>845</x>
+     <y>610</y>
     </hint>
    </hints>
   </connection>
@@ -1101,12 +1105,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>903</x>
-     <y>751</y>
+     <x>845</x>
+     <y>610</y>
     </hint>
     <hint type="destinationlabel">
-     <x>723</x>
-     <y>750</y>
+     <x>795</x>
+     <y>611</y>
     </hint>
    </hints>
   </connection>
@@ -1117,12 +1121,28 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>903</x>
-     <y>781</y>
+     <x>847</x>
+     <y>640</y>
     </hint>
     <hint type="destinationlabel">
-     <x>723</x>
-     <y>780</y>
+     <x>795</x>
+     <y>643</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_quality280</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spin_quality280</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>584</x>
+     <y>653</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>443</x>
+     <y>652</y>
     </hint>
    </hints>
   </connection>

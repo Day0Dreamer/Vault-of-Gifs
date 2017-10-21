@@ -42,6 +42,7 @@ def avis_in_folder():
     return [os.path.join(os.path.abspath('./input'), avi) for avi in os.listdir('input') if '.avi' in avi]
 
 os.makedirs('temp', exist_ok=True)
+os.makedirs('bin', exist_ok=True)
 
 def emoji_list():
     emoji = []

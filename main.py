@@ -28,16 +28,20 @@ ITEM_FULL_PATH =     0x106
 
 
 def gifs_in_folder():
+    os.makedirs('input', exist_ok=True)
     return [os.path.join(os.path.abspath('./input'), gif) for gif in os.listdir('input') if '.gif' in gif]
 
 
 def acts_in_folder():
+    os.makedirs('act', exist_ok=True)
     return [os.path.join(os.path.abspath(act_folder), act) for act in os.listdir('act') if '.act' in act]
 
 
 def avis_in_folder():
+    os.makedirs('input', exist_ok=True)
     return [os.path.join(os.path.abspath('./input'), avi) for avi in os.listdir('input') if '.avi' in avi]
 
+os.makedirs('temp', exist_ok=True)
 
 def emoji_list():
     emoji = []
@@ -769,7 +773,6 @@ class Emoji(object):
             self.video_list_item.setToolTip\
                 ('Name: {} \nversion: {} \nresolution: {} \nfps: {} \nlossy: {} \ndamaged: {}'
                  .format(self.name, self.version, self.resolution, self.fps, self.lossy, self.damaged))
-
 
             self.video_list_item.setData(ITEM_EMOJI_OBJECT, self)
             self.video_list_item.setData(ITEM_NAME        , self.name)

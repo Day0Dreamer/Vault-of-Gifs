@@ -604,7 +604,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         Returns output_file, which by default is equal to input_file"""
         if output_file is None:
             output_file = input_file
-        cmd = 'gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}' \
+        cmd = 'bin\\gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}' \
             .format(lossy_factor, color_map, input_file, output_file)
         self.launch_process(cmd, source)
         return output_file
@@ -615,7 +615,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         Returns input_file with .gif extension"""
         if flag_convert_30_to_29dot97 and fps == 30:
             fps = 29.97
-        cmd = 'video2gif.bat {} -y -f {}'.format(input_file, fps)
+        cmd = 'bin\\video2gif.bat {} -y -f {}'.format(input_file, fps)
         if '280' in input_file:
             self.launch_process(cmd, 'ffmpeg280', input_file)
 

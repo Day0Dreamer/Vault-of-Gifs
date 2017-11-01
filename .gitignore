@@ -12,3 +12,5 @@ input
 *.tmp
 *.exe
 *.yml
+*.txt
+*.spec

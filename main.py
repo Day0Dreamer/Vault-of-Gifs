@@ -748,7 +748,7 @@ class Emoji(object):
     def __init__(self, filename):
         self.name = self.version = self.resolution = self.fps = self.lossy = self.damaged = self.has_raw_gif = False
         self.full_path = filename
-        # [Наименование-анимации]-[02]]-[280х280]-[30FPS]-[LOSSY]-[DAMAGED].[ext]
+        # [Наименование-анимации]-[02]-[280х280]-[30FPS]-[LOSSY]-[DAMAGED].[ext]
         self.path, self.name = os.path.split(filename)
         self.ext = os.path.splitext(self.name)[1]
         self.name = os.path.splitext(self.name)[0]

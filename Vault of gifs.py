@@ -1,12 +1,17 @@
 # encoding: utf-8
-import PySide.QtGui as QtGui
-import PySide.QtCore as QtCore
-import act_reader
+import os
 # import gifsicle
 # import avi2gif
 import time
-import gif
-import os
+
+import PySide.QtCore as QtCore
+import PySide.QtGui as QtGui
+from os import path
+
+import act_reader
+from widgets import MainWindow_UI
+from widgets import settings
+
 
 # ################################# CONFIG ################################### #
 flag_convert_30_to_29dot97 = True
@@ -27,75 +32,86 @@ ITEM_FULL_PATH =     0x106
 # ############################### END CONSTANTS ############################## #
 
 
-def gifs_in_folder():
-    os.makedirs('input', exist_ok=True)
-    return [os.path.join(os.path.abspath('./input'), gif) for gif in os.listdir('input') if '.gif' in gif]
+def gifs_in_folder(folder='input'):
+    return [os.path.join(os.path.abspath(folder), gif) for gif in os.listdir(folder) if '.gif' in gif]
 
 
 def acts_in_folder():
-    os.makedirs('act', exist_ok=True)
     return [os.path.join(os.path.abspath(act_folder), act) for act in os.listdir('act') if '.act' in act]
 
 
-def avis_in_folder():
-    os.makedirs('input', exist_ok=True)
-    return [os.path.join(os.path.abspath('./input'), avi) for avi in os.listdir('input') if '.avi' in avi]
-
-os.makedirs('temp', exist_ok=True)
-os.makedirs('bin', exist_ok=True)
-
-def emoji_list():
-    emoji = []
-    for item in gifs_in_folder():
-        if len(item.split('-')) >= 4:
-            item = Emoji(item)
-            emoji.append(item)
-    return emoji
+def avis_in_folder(folder):
+    return [os.path.join(os.path.abspath(folder), avi) for avi in os.listdir(folder) if '.avi' in avi]
 
 
-class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
+def files_in_folder(folder, ext):
+    return [os.path.join(os.path.abspath(folder), file) for file in os.listdir(folder) if '.'+str(ext) in file]
+
+
+class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
     def __init__(self):
-        super(DDgui, self).__init__()
+        super(QtMainWindow, self).__init__()
         self.setupUi(self)
-        self.setGeometry(200, 200, 40, 40)
 
-        self.graphics_scene = QtGui.QGraphicsScene(self.layout_colortable)
-        self.graphicsView = QtGui.QGraphicsView(self.graphics_scene)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
-        self.graphicsView.setSizePolicy(sizePolicy)
-        self.graphicsView.setMaximumSize(QtCore.QSize(16777215, 150))
-        self.graphicsView.setObjectName("graphicsView")
-        self.horizontalLayout.addWidget(self.graphicsView)
+        os.makedirs('temp', exist_ok=True)
+        os.makedirs('bin', exist_ok=True)
+        os.makedirs('input', exist_ok=True)
+        os.makedirs('act', exist_ok=True)
+        self.working_directory = 'input'
+
+        # ############################ MODIFY INTERFACE ############################## #
+        # self.setGeometry(200, 200, 40, 40)
 
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
 
-        # self.btn_size1.clicked.connect(lambda: self.spin_width.setValue(dims[0][0]))
-        # self.btn_size1.clicked.connect(lambda: self.spin_height.setValue(dims[0][1]))
-
         self.movie136 = QtGui.QMovie()
         self.movie280 = QtGui.QMovie()
+
+        # Add acts from folder to list widget
+        self.dropdown_colortable.addItems(acts_in_folder())
+
+        self.source = None
+
+        # Update the video list on initial program start
+        self.update_video_list(self.working_directory)
+        self.update_gifs_list(self.working_directory)
+
+        ################################### ??? ###################################### #
 
         # ################################# TOP BAR ################################## #
         @self.actionExit.triggered.connect
         def exit_ui():
             exit(0)
 
+        @self.actionConfig.triggered.connect
+        def call_settings():
+            self.dial = settings.QtSettings()
+            self.dial.exec_()
+
+        @self.actionDelete_temp_files.triggered.connect
+        def clear_temp_folder():
+            for file in os.listdir('temp'):
+                os.remove(os.path.join('temp', file))
+
         # ################################# TOP ROW ################################## #
-        self.btn_top1.setText('Update Videos Available')
         @self.btn_top1.clicked.connect
-        def wip1():
-            self.update_video_list()
-            self.update_gifs_list()
+        def convert_mov_to_mp4():
+            print(QtGui.QFileDialog())
+            files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
+                                                              "QFileDialog.getOpenFileNames()", '.',
+                                                              "All Files (*);;MOV (*.mov)", "MOV (*.mov)")
+            print(files, filtr)
+            for input_file in files:
+                self.launch_process('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
+                                    '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
 
         @self.btn_top2.clicked.connect
         def wip2():
             minimal_window_size()
 
         self.btn_top3.setEnabled(True)
+        self.btn_top3.hide()
         @self.btn_top3.clicked.connect
         def btn3():
             self.load_palette('SteffonDiggsEmoji-02-280x280-15FPS.avi_palette.png')
@@ -112,18 +128,26 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         @self.btn_top4.clicked.connect
         def toggle_console():
             self.console.setVisible(self.btn_top4.isChecked())
+            self.resize(0,0)
+
 
         # ############################### LEFT COLUMN ################################ #
         @self.btn_input_folder.clicked.connect
         def input_folder():
-            self.list_videoslist.clear()
-            self.list_videoslist.addItems(avis_in_folder())
-            # self.list_gifslist.clear()
-            # self.list_gifslist.addItems(gifs_in_folder())
+            # self.list_videoslist.clear()
+            # self.list_videoslist.addItems(avis_in_folder())
+
             # Add gifs from folder to list widget
-            for i in emoji_list():
-                print(i)
-                self.list_gifslist.addItem(i.filename)
+            # for i in emoji_list():
+            #     print(i)
+            #     self.list_gifslist.addItem(i.filename)
+
+            # options = QtGui.QFileDialog.DontResolveSymlinks | QtGui.QFileDialog.ShowDirsOnly
+            directory = QtGui.QFileDialog.getExistingDirectory()
+            if directory:
+                self.working_directory = directory
+                self.update_video_list(self.working_directory)
+                self.update_gifs_list(self.working_directory)
 
         @self.list_videoslist.itemActivated.connect
         def avi_double_clicked_decorated(video_list_item):
@@ -163,6 +187,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 # Launch avi's gif counterparts
                 if os.path.splitext(video_file_path)[1] != 'gif':
                     video_file_path = os.path.splitext(video_file_path)[0] + '.gif'
+
                 # If it is 136 file > load it to 136 viewport
                 if '136' in video_file_path:
                     self.load136(video_file_path)
@@ -203,7 +228,10 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             else:
                 self.statusbar.showMessage('Nothing selected for export')
 
+        self.groupb_preset.hide()
+
         # ############################## MIDDLE COLUMN ############################### #
+
         @self.btn_fb280.clicked.connect
         def btn_fb280_clicked():
             current_frame = self.movie280.currentFrameNumber()
@@ -289,7 +317,15 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
             output_file = os.path.splitext(working_file)[0] + '.tmp'
             self.movie280.stop()
             lossy_factor = self.spin_quality280.text()
-            color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+            # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+            self_act_as_txt = path.join('.\\temp',
+                                        os.path.splitext(
+                                            path.split(
+                                                self.dropdown_colortable.currentText())[1])[0]+'.txt')
+            with open(self_act_as_txt, 'w') as txt:
+                txt.writelines(self.plaintext_act_readout.toPlainText())
+            color_table = self_act_as_txt
+
             # self.btn_update280.setEnabled(False)
             if self.check_endless_lossy280.isChecked():
                 self.gifsicle(
@@ -307,6 +343,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                     output_file=output_file,
                     delay=3,
                     source=self.source)
+            self.proc.waitForFinished()
                 # @self.worker.finish_signal.connect
                 # def load280_decorated():
                 #     print('Finish signal received:', time.time())
@@ -326,6 +363,9 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 # self.btn_update280.setEnabled(True)
 
         # ############################### RIGHT COLUMN ############################### #
+
+        self.load_act(acts_in_folder()[0])
+
         @self.btn_fb136.clicked.connect
         def btn_fb136_clicked():
             current_frame = self.movie136.currentFrameNumber()
@@ -434,34 +474,10 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         def minimal_window_size():
             self.resize(1, 1)
 
-        # def lossy(input_file, lossy_factor, color_map, delay=3, output_file=None, program='gifsicle.exe', arg=''):
-        #     if output_file is None:
-        #         output_file = input_file
-        #     if arg == '':
-        #         arg = '-O3 -d={} --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}' \
-        #             .format(delay, lossy_factor, color_map, input_file, output_file)
-
-                #     parent.process = QtCore.QProcess(self)
-                #     parent.process.start(program, arg)
-                #     parent.process.readyReadStandardOutput.connect(self.__read)
-                #     parent.calc.start('ping.exe', ['127.0.0.1'])
-                #
-                # def __read(self):
-                #     out = self.calc.readAllStandardOutput()
-                #     print(out)
-                #
-                # lossy
-
-        self.source = None
-        self.update_video_list()
-        self.update_gifs_list()
-        # Add acts from folder to list widget
-        self.dropdown_colortable.addItems(acts_in_folder())
-
-    def update_video_list(self):
+    def update_video_list(self, folder='input', ext='avi'):
         self.list_videoslist.clear()
         # Add objects pre-created list items to the list
-        for i in avis_in_folder():
+        for i in files_in_folder(folder, ext):
             emoji_object = Emoji(i)
             # Get the video-list item out of the Emoji object
             item = emoji_object.video_list_item
@@ -475,10 +491,10 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 emoji_object.has_raw_gif = False
             self.list_videoslist.addItem(item)
 
-    def update_gifs_list(self):
+    def update_gifs_list(self, folder='input', ext='gif'):
         self.list_gifslist.clear()
         # Add objects pre-created list items to the list
-        for i in gifs_in_folder():
+        for i in files_in_folder(folder, ext):
             emoji_object = Emoji(i)
             # Get the video-list item out of the Emoji object
             item = emoji_object.video_list_item
@@ -491,13 +507,15 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 item.setBackground(QtGui.QColor(255, 255, 255, 255))
                 emoji_object.has_raw_gif = False
             self.list_gifslist.addItem(item)
+
     # ################################# LOADERS ################################## #
 
     def load_act(self, act_file):
         # print(act_file)
-        self.graphics_scene.clear()
+        self.plaintext_act_readout.clear()
         act = act_reader.act_to_list(act_file)
-        self.graphics_scene.addText(''.join(act[0]))
+        # self.graphics_scene.addText(''.join(act[0]))
+        self.plaintext_act_readout.setPlainText(''.join(act[0]))
         self.statusbar.showMessage(act[1])
 
     def load280(self, file280):
@@ -546,6 +564,7 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         self.btn_update280.setEnabled(False)
         self.proc = QtCore.QProcess()
         self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        # self.proc.waitForFinished()
 
         @self.proc.finished.connect
         def finished():
@@ -586,9 +605,11 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
                 self.console_add(message)
             if source == 'ffmpeg280':
                 self.load280(os.path.splitext(working_file)[0] + '.gif')
+                self.original_280_gif = os.path.splitext(working_file)[0] + '.gif'
                 self.update_video_list()
             if source == 'ffmpeg136':
                 self.load136(os.path.splitext(working_file)[0] + '.gif')
+                self.original_136_gif = os.path.splitext(working_file)[0] + '.gif'
                 self.update_video_list()
 
         time1 = time.time()
@@ -667,7 +688,6 @@ class DDgui(QtGui.QMainWindow, gif.Ui_MainWindow):
         lossy_file_size = os.path.getsize(output_file)
         output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS-lossy-damaged.gif'
                                    .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-
 
         while lossy_file_size > 500*1024:
 
@@ -792,11 +812,16 @@ class Emoji(object):
 
 
 if __name__ == '__main__':
-    # [ print('\n' + i.get_info()) for i in emojis_list]
 
     app = QtGui.QApplication([])
-    w = DDgui()
+    MainWindowObj = QtMainWindow()
+    MainWindowObj.show()
 
-    w.show()
+    # Qt280WindowObj = QtWidget280()
+    # Qt280WindowObj.show()
+
+    # SettingsWindowObj = settings.QtSettings()
+    # SettingsWindowObj.show()
+
     app.exec_()
 

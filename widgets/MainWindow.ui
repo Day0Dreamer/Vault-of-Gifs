@@ -23,14 +23,14 @@
          <bool>true</bool>
         </property>
         <property name="text">
-         <string>Convert AVI &gt; GIF</string>
+         <string>Convert MOV &gt; MP4 (h264)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="btn_top2">
         <property name="text">
-         <string>W.I.P.</string>
+         <string>Project assemble </string>
         </property>
        </widget>
       </item>
@@ -582,6 +582,13 @@
            <property name="topMargin">
             <number>4</number>
            </property>
+           <item>
+            <widget class="QPlainTextEdit" name="plaintext_act_readout">
+             <property name="lineWrapMode">
+              <enum>QPlainTextEdit::NoWrap</enum>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1019,54 +1026,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>spin_scale280</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_scale280</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>433</x>
-     <y>611</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>610</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spin_quality280</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_quality280</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>433</x>
-     <y>643</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>640</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_scale280</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spin_scale280</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>494</x>
-     <y>610</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>433</x>
-     <y>611</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>spin_quality136</sender>
    <signal>valueChanged(int)</signal>
    <receiver>slider_quality136</receiver>
@@ -1127,6 +1086,54 @@
     <hint type="destinationlabel">
      <x>795</x>
      <y>643</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spin_scale280</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_scale280</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>433</x>
+     <y>611</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>494</x>
+     <y>610</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spin_quality280</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_quality280</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>433</x>
+     <y>643</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>494</x>
+     <y>640</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_scale280</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spin_scale280</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>494</x>
+     <y>610</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>611</y>
     </hint>
    </hints>
   </connection>

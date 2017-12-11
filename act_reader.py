@@ -1,5 +1,6 @@
 # encoding: utf-8
-from os import path
+from os import path, makedirs
+
 
 def act_to_list(act_file):
     with open(act_file, 'rb') as act:
@@ -38,6 +39,7 @@ def create_gifsicle_colormap(act_file, output=None):
     :return: Returns the resulting txt file's path
     """
     if output is None:
+        makedirs('temp')
         output = path.join(path.curdir, 'temp', path.splitext(path.split(act_file)[1])[0] + '.txt')
     with open(output, 'w') as txt:
         txt.writelines(act_to_list(act_file)[0])

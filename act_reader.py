@@ -29,8 +29,16 @@ def act_to_list(act_file):
 
 
 def create_gifsicle_colormap(act_file, output=None):
+    """
+    :type act_file: str
+    :param act_file: Input act file
+    :type output: str
+    :param output: Resulting txt file's path (Default temp folder+act_filename)
+    :rtype: str
+    :return: Returns the resulting txt file's path
+    """
     if output is None:
-        output = path.join('.\\temp', path.splitext(path.split(act_file)[1])[0] + '.txt')
+        output = path.join(path.curdir, 'temp', path.splitext(path.split(act_file)[1])[0] + '.txt')
     with open(output, 'w') as txt:
         txt.writelines(act_to_list(act_file)[0])
     return output

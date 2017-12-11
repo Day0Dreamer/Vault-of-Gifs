@@ -77,7 +77,7 @@ class Conversion(QObject):
 
 temp_project_folder = input('\nWhere is your project? (. or input or C:/input)\nDefault folder is "input"\n')
 if temp_project_folder == '':
-    temp_project_folder = path.join(path.curdir, 'input1')
+    temp_project_folder = path.join(path.curdir, 'input')
 
 qapp = QApplication([])
 conversion = Conversion(temp_project_folder, temp_lossy_factor)

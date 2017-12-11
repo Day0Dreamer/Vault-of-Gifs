@@ -34,7 +34,7 @@ class Conversion(QObject):
         self.lossy_factor = lossy_factor
         # Use the first color map present in the project folder
         if not color_map:
-            self.color_map = self.files_in_folder(temp_project_folder, 'act')[0]
+            self.color_map = self.files_in_folder(self.project_folder, 'act')[0]
 
         self.loop = QEventLoop()
         self.conversion1_done.connect(self.loop.quit)
@@ -45,7 +45,7 @@ class Conversion(QObject):
         self.loop.exec_()
 
     def avis2gif(self):
-        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder()}
+        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder)}
         for item in emoji_dict.keys():
             # print(emoji_dict[item])
             if not emoji_dict[item].has_gif:
@@ -54,7 +54,7 @@ class Conversion(QObject):
         QTimer.singleShot(0, self.conversion1_done)
 
     def gifs2lossy(self):
-        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder()}
+        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder)}
         for item in emoji_dict.keys():
             if not emoji_dict[item].has_lossy:
                 print(emoji_dict[item].name, 'lossy file missing, creating one')
@@ -62,7 +62,7 @@ class Conversion(QObject):
         QTimer.singleShot(0, self.conversion2_done)
 
     def gifs2damaged(self):
-        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder()}
+        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder)}
         for item in emoji_dict.keys():
             if not emoji_dict[item].has_damaged:
                 print(emoji_dict[item].name, 'damaged file missing, creating')

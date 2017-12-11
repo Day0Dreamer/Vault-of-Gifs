@@ -13,9 +13,8 @@ from config import Config
 config = Config()
 conf_damaged_filesize = int(config()['damaged_filesize'])*1024
 
-class GifSicle(QObject):
-    # def __init__(self, *args, input_file=None, lossy_factor=None, color_map=None, fps=30, delay=None, output_file=None):
 
+class GifSicle(QObject):
     loop_done = Signal()
 
     def __init__(self, emoji=None, lossy_factor=None, color_map=None, to_lossy=None, to_damaged=None):

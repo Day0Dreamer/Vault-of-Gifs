@@ -34,7 +34,10 @@ class Conversion(QObject):
         self.lossy_factor = lossy_factor
         # Use the first color map present in the project folder
         if not color_map:
-            self.color_map = self.files_in_folder(self.project_folder, 'act')[0]
+            try:
+                self.color_map = self.files_in_folder(self.project_folder, 'act')[0]
+            except(IndexError):
+                print('Please put one color_palette.act in the folder')
 
         self.loop = QEventLoop()
         self.conversion1_done.connect(self.loop.quit)
@@ -74,7 +77,7 @@ class Conversion(QObject):
 
 temp_project_folder = input('\nWhere is your project? (. or input or C:/input)\nDefault folder is "input"\n')
 if temp_project_folder == '':
-    temp_project_folder = path.join(path.curdir, 'input')
+    temp_project_folder = path.join(path.curdir, 'input1')
 
 qapp = QApplication([])
 conversion = Conversion(temp_project_folder, temp_lossy_factor)

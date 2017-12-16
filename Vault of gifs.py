@@ -114,7 +114,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.videolist_model = None
         self.ffmpeg = None
         self.gifsicle = None
-        self.launcher = Launcher()
+        # self.launcher = Launcher()
         self.main_task_pool = TasksPool()
 
         # ############################ MODIFY INTERFACE ############################## #

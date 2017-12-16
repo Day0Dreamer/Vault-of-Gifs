@@ -33,7 +33,8 @@ class Conversion(QObject):
         self.conversion1_done.connect(self.loop.quit)
         self.conversion1_done.connect(self.gifs2lossy)
         self.conversion2_done.connect(self.gifs2damaged)
-
+        if __name__ == '__main__':
+            self.conversion3_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
         self.conversion1_done.connect(lambda: print('c1done'))
         self.conversion2_done.connect(lambda: print('c2done'))
         self.conversion3_done.connect(lambda: print('c3done'))
@@ -96,7 +97,6 @@ if __name__ == '__main__':
         temp_project_folder = path.join(path.curdir, 'input')
 
     qapp = QApplication([])
-    qapp.conversion3_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
     temp_lossy_factor = 0
     conversion = Conversion(temp_project_folder, temp_lossy_factor)
     qapp.exec_()

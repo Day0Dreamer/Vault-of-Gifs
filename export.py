@@ -1,4 +1,5 @@
 # encoding: utf-8
+# Добавить обработку ненахождения карты цветов в папке инпут
 from PySide.QtCore import QEventLoop, Signal, QObject, QTimer
 from PySide.QtGui import QApplication
 
@@ -32,7 +33,7 @@ class Conversion(QObject):
         self.conversion1_done.connect(self.loop.quit)
         self.conversion1_done.connect(self.gifs2lossy)
         self.conversion2_done.connect(self.gifs2damaged)
-        # self.conversion3_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
+
         self.conversion1_done.connect(lambda: print('c1done'))
         self.conversion2_done.connect(lambda: print('c2done'))
         self.conversion3_done.connect(lambda: print('c3done'))
@@ -67,31 +68,35 @@ class Conversion(QObject):
     def files_in_folder(self, folder='input', ext='avi'):
         return [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) in file]
 
-# ################################# ARGPARSE ################################# #
-# parser = argparse.ArgumentParser(description='This program converts video files to compressed gifs.',
-#                                  usage=r'"C:\files" "C:\color.act" 140 230')
-# parser.add_argument("folder", help="project folder", type=str, metavar='input')
-# parser.add_argument("color", help="color palette (act or txt)", type=str)
-# parser.add_argument("l280", help="LZW compression factor for 280px pictures", type=int, metavar="lossy 280px")
-# parser.add_argument("l136", help="LZW compression factor for 136px pictures", type=int, metavar="lossy 136px")
-# parser.add_argument("-ext", help="Video files extension (default is AVI)", type=str, default='avi')
-# if len(sys.argv) == 1:
-#     parser.print_help()
-#     # sys.exit(1)
-# try:
-#     # args = parser.parse_args(['C:\Python\Vault_Of_Gifs\input', r'C:\Python\Vault_Of_Gifs\temp\perc.txt', '200', '200'])
-#     args = parser.parse_args()
-# except:
-#     args = None
+################################# ARGPARSE ################################# #
+parser = argparse.ArgumentParser(description='This program converts video files to compressed gifs.',
+                                 usage=r'"C:\files" "C:\color.act" 140 230')
+parser.add_argument("folder", help="project folder", type=str, metavar='input')
+parser.add_argument("color", help="color palette (act or txt)", type=str)
+parser.add_argument("l280", help="LZW compression factor for 280px pictures", type=int, metavar="lossy 280px")
+parser.add_argument("l136", help="LZW compression factor for 136px pictures", type=int, metavar="lossy 136px")
+parser.add_argument("-ext", help="Video files extension (default is AVI)", type=str, default='avi')
 
-# ############################## END ARGPARSE ################################ #
+
+############################## END ARGPARSE ################################ #
 
 if __name__ == '__main__':
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        # sys.exit(1)
+    try:
+        # args = parser.parse_args(['C:\Python\Vault_Of_Gifs\input', r'C:\Python\Vault_Of_Gifs\temp\perc.txt', '200', '200'])
+        args = parser.parse_args()
+    except:
+        args = None
+
     temp_project_folder = input('\nWhere is your project? (. or input or C:/input)\nDefault folder is "input"\n')
     if temp_project_folder == '':
         temp_project_folder = path.join(path.curdir, 'input')
 
     qapp = QApplication([])
+    qapp.conversion3_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
     temp_lossy_factor = 0
     conversion = Conversion(temp_project_folder, temp_lossy_factor)
     qapp.exec_()

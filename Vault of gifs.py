@@ -10,7 +10,7 @@ import sys
 
 from config import Config
 import time
-from threads import Launcher
+# from threads import Launcher
 
 import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui

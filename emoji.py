@@ -15,7 +15,7 @@ class Emoji(object):
         Creates Emoji objects from a file, based on a naming convention: [Name]-[02]-[280х280]-[30FPS].[ext]
         """
         self.name = self.version = self.resolution = self.fps = self.lossy = self.damaged = self.has_gif =\
-            self.has_lossy = self.has_damaged = self.gif = False
+            self.has_lossy = self.has_damaged = self.temp_path = False
         # Set full path
         self.full_path = filename
         # Set containing folder and filename
@@ -28,12 +28,16 @@ class Emoji(object):
         self.name, self.version = re.split('(\d*$)', name_and_version)[:2]
         # Remove spaces from name in the beginning and the end
         self.name = self.name.strip()
+        # Remove '-' from name in the beginning and the end
+        self.name = self.name.strip('-')
         # else:
         #     raise Exception('Something went wrong with the name of {}'.format(filename))
         # Set FPS to caps and remove the letters FPS
         self.fps = self.fps.upper().rstrip('FPS')
         # Set delay using config
         self.delay = fps_delays[str(self.fps)]
+        # Set temp path
+        self.temp_path = path.splitext(self.full_path)[0]+'.tmp'
         # Check if there are gif derivatives
         self.gif_path = path.splitext(self.full_path)[0]+'.gif'
         if path.exists(self.gif_path):
@@ -55,8 +59,8 @@ class Emoji(object):
         :rtype: str
         :return: Returns out all the variables for a given object
         """
-        data = 'Name: {} | version: {} | resolution: {} | fps: {} | gif: {} ({}) | lossy: {} ({}) | damaged: {} ({}) | Fullpath: {} | Folder: {} | Filename: {} | NameNoExt {} | Ext {} | SplitProperties {}'\
-            .format(self.name, self.version, self.resolution, self.fps, self.has_gif, self.gif_path, self.has_lossy, self.lossy_path, self.has_damaged, self.damaged_path, self.full_path, self.folder, self.filename, self.name_no_ext, self.ext, self.split_properties)
+        data = 'Name: {} | Version: {} | Resolution: {} | FPS: {} | Gif: {} ({}) | Lossy: {} ({}) | Damaged: {} ({}) | Fullpath: {} | Folder: {} | Filename: {} | NameNoExt: {} | Ext: {}'\
+            .format(self.name, self.version, self.resolution, self.fps, self.has_gif, self.gif_path, self.has_lossy, self.lossy_path, self.has_damaged, self.damaged_path, self.full_path, self.folder, self.filename, self.name_no_ext, self.ext)
         return data
 
 if __name__ == '__main__':

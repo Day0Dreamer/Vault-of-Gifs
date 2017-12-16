@@ -24,16 +24,25 @@ class GifSicle(QObject):
         """
         super(GifSicle, self).__init__()
         self.tp = TasksPool()
-
         # If we supply Emoji object, then
         if isinstance(emoji, Emoji):
             if emoji.has_gif:
                 if to_lossy:
                     self.to_lossy(emoji, lossy_factor, color_map)
-                if to_damaged:
+                elif to_damaged:
                     self.to_damaged(emoji, lossy_factor, color_map)
+                else:
+                    self.updated(emoji, lossy_factor, color_map)
             else:
                 print(__name__, 'Warning: {} has no gif made'.format(emoji.name_no_ext))
+
+    def updated(self, emoji, lossy_factor, color_map):
+        self.add(input_file=emoji.gif_path,
+                 lossy_factor=lossy_factor,
+                 color_map=color_map,
+                 delay=emoji.delay,
+                 output_file=emoji.temp_path)
+        self.run()
 
     def to_lossy(self, emoji, lossy_factor, color_map):
         self.add(input_file=emoji.gif_path,

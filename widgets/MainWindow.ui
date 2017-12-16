@@ -97,7 +97,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
-             <widget class="QListWidget" name="list_videoslist">
+             <widget class="QListView" name="list_videoslist">
               <property name="selectionMode">
                <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
@@ -111,7 +111,7 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <widget class="QListWidget" name="list_gifslist">
+             <widget class="QListView" name="list_gifslist">
               <property name="selectionMode">
                <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
@@ -555,13 +555,6 @@
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QCheckBox" name="check_endless_lossy280">
-                 <property name="text">
-                  <string>Additive madness</string>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </item>
             </layout>
@@ -923,13 +916,6 @@
                  </property>
                  <property name="text">
                   <string>Auto update</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="check_endless_lossy136">
-                 <property name="text">
-                  <string>Additive madness</string>
                  </property>
                 </widget>
                </item>

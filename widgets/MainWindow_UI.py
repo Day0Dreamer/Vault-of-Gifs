@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\MainWindow.ui'
 #
-# Created: Sun Nov  5 14:08:44 2017
+# Created: Sat Dec 16 22:51:11 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -56,7 +56,7 @@ class Ui_MainWindow(object):
         self.tab_videos.setObjectName("tab_videos")
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.tab_videos)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.list_videoslist = QtGui.QListWidget(self.tab_videos)
+        self.list_videoslist = QtGui.QListView(self.tab_videos)
         self.list_videoslist.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.list_videoslist.setObjectName("list_videoslist")
         self.verticalLayout_4.addWidget(self.list_videoslist)
@@ -65,7 +65,7 @@ class Ui_MainWindow(object):
         self.tab_gifs.setObjectName("tab_gifs")
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.tab_gifs)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.list_gifslist = QtGui.QListWidget(self.tab_gifs)
+        self.list_gifslist = QtGui.QListView(self.tab_gifs)
         self.list_gifslist.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.list_gifslist.setObjectName("list_gifslist")
         self.verticalLayout_5.addWidget(self.list_gifslist)
@@ -265,9 +265,6 @@ class Ui_MainWindow(object):
         self.check_livepreview280.setSizePolicy(sizePolicy)
         self.check_livepreview280.setObjectName("check_livepreview280")
         self.horizontalLayout_3.addWidget(self.check_livepreview280)
-        self.check_endless_lossy280 = QtGui.QCheckBox(self.layout_gif280)
-        self.check_endless_lossy280.setObjectName("check_endless_lossy280")
-        self.horizontalLayout_3.addWidget(self.check_endless_lossy280)
         self.layout_preview280.addLayout(self.horizontalLayout_3)
         self.verticalLayout.addLayout(self.layout_preview280)
         self.layout_280.addWidget(self.layout_gif280)
@@ -432,9 +429,6 @@ class Ui_MainWindow(object):
         self.check_livepreview136.setSizePolicy(sizePolicy)
         self.check_livepreview136.setObjectName("check_livepreview136")
         self.horizontalLayout_2.addWidget(self.check_livepreview136)
-        self.check_endless_lossy136 = QtGui.QCheckBox(self.layout_gif136)
-        self.check_endless_lossy136.setObjectName("check_endless_lossy136")
-        self.horizontalLayout_2.addWidget(self.check_endless_lossy136)
         self.layout_preview136.addLayout(self.horizontalLayout_2)
         self.verticalLayout_3.addLayout(self.layout_preview136)
         self.layout_136.addWidget(self.layout_gif136)
@@ -519,7 +513,6 @@ class Ui_MainWindow(object):
         self.lbl_quality280.setText(QtGui.QApplication.translate("MainWindow", "Lossy", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_update280.setText(QtGui.QApplication.translate("MainWindow", "Update", None, QtGui.QApplication.UnicodeUTF8))
         self.check_livepreview280.setText(QtGui.QApplication.translate("MainWindow", "Auto update", None, QtGui.QApplication.UnicodeUTF8))
-        self.check_endless_lossy280.setText(QtGui.QApplication.translate("MainWindow", "Additive madness", None, QtGui.QApplication.UnicodeUTF8))
         self.layout_colortable.setTitle(QtGui.QApplication.translate("MainWindow", "Color table", None, QtGui.QApplication.UnicodeUTF8))
         self.layout_gif136.setTitle(QtGui.QApplication.translate("MainWindow", "136x136 px", None, QtGui.QApplication.UnicodeUTF8))
         self.gifplayer136.setText(QtGui.QApplication.translate("MainWindow", "136 px picture", None, QtGui.QApplication.UnicodeUTF8))
@@ -531,7 +524,6 @@ class Ui_MainWindow(object):
         self.lbl_quality136.setText(QtGui.QApplication.translate("MainWindow", "Lossy", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_update136.setText(QtGui.QApplication.translate("MainWindow", "Update", None, QtGui.QApplication.UnicodeUTF8))
         self.check_livepreview136.setText(QtGui.QApplication.translate("MainWindow", "Auto update", None, QtGui.QApplication.UnicodeUTF8))
-        self.check_endless_lossy136.setText(QtGui.QApplication.translate("MainWindow", "Additive madness", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.menuOptions.setTitle(QtGui.QApplication.translate("MainWindow", "&Options", None, QtGui.QApplication.UnicodeUTF8))

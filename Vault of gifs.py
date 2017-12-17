@@ -4,13 +4,8 @@ from gifsicle import GifSicle
 from ffmpeg import FFmpeg
 from emoji import Emoji
 from export import Conversion
-from shutil import copy2
-
-import sys
 
 from config import Config
-import time
-# from threads import Launcher
 
 import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui
@@ -21,7 +16,7 @@ from widgets import MainWindow_UI
 from widgets import settings
 from widgets import stylesheet
 
-from Tasks_pool3 import TasksPool
+# from Tasks_pool3 import TasksPool
 
 
 # ################################# CONFIG ################################### #
@@ -79,7 +74,7 @@ class VideoListModel(QtCore.QAbstractListModel):
             return emoji
         # Setup the text we see in the list
         if role == QtCore.Qt.DisplayRole:
-            return str(emoji)
+            return str(emoji.name)
         # Setup the icon we see in the list
         if role == QtCore.Qt.DecorationRole:
             icon_path = path.join(path.curdir, icons_folder_name, "{}_{}.png".format(emoji.resolution, emoji.fps))
@@ -115,7 +110,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.ffmpeg = None
         self.gifsicle = None
         # self.launcher = Launcher()
-        self.main_task_pool = TasksPool()
+        # self.main_task_pool = TasksPool()
 
         # ############################ MODIFY INTERFACE ############################## #
         # self.setGeometry(200, 200, 40, 40)
@@ -126,7 +121,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.movie280 = QtGui.QMovie()
 
         # Add acts from folder to list widget
-        self.dropdown_colortable.addItems(acts_in_folder())
+        # self.dropdown_colortable.addItems(acts_in_folder())
+        self.dropdown_colortable.addItems([path.split(x)[1] for x in files_in_folder(self.working_directory, 'act')])
 
         self.source = None
         self.working_emoji = None
@@ -159,6 +155,11 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 os.remove(os.path.join('temp', file))
 
         # ################################# TOP ROW ################################## #
+        # self.separator_topshelf.hide()
+        self.btn_top1.hide()
+        self.btn_top3.hide()
+        self.btn_top4.hide()
+
         @self.btn_top1.clicked.connect
         def convert_mov_to_mp4():
             print(QtGui.QFileDialog())
@@ -170,12 +171,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.launch_process('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
                                     '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
 
-        @self.btn_top2.clicked.connect
-        def wip2():
-            minimal_window_size()
+
 
         self.btn_top3.setEnabled(True)
-        # self.btn_top3.hide()
         @self.btn_top3.clicked.connect
         def btn3():
             # self.load_palette('SteffonDiggsEmoji-02-280x280-15FPS.avi_palette.png')
@@ -290,7 +288,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
-            self.load_act(acts_in_folder()[index_of_selected_item])
+            self.load_act(files_in_folder(self.working_directory, 'act')[index_of_selected_item])
 
         @self.btn_export.clicked.connect
         def btn_export_clicked():
@@ -308,6 +306,10 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         #         self.statusbar.showMessage('Nothing selected for export')
         #
         # self.groupb_preset.hide()
+
+        @self.btn_collect.clicked.connect
+        def collect():
+            minimal_window_size()
 
         # ############################## MIDDLE COLUMN ############################### #
 
@@ -447,7 +449,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         # ############################### RIGHT COLUMN ############################### #
 
-        self.load_act(acts_in_folder()[0])
+        # Load the color table viewer
+        self.load_act(files_in_folder(self.working_directory, 'act')[self.dropdown_colortable.currentIndex()])
+
 
         @self.btn_fb136.clicked.connect
         def btn_fb136_clicked():
@@ -535,7 +539,14 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             output_file = os.path.splitext(working_file)[0] + '.tmp'
             self.movie136.stop()
             lossy_factor = self.spin_quality136.text()
-            color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+            # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+            self_act_as_txt = path.join('.\\temp',
+                                        path.splitext(
+                                            path.split(
+                                                self.dropdown_colortable.currentText())[1])[0]+'.txt')
+            with open(self_act_as_txt, 'w') as txt:
+                txt.writelines(self.plaintext_act_readout.toPlainText())
+            color_table = self_act_as_txt
             # print(color_table)
             # self.btn_update136.setEnabled(False)
             # if self.check_endless_lossy136.isChecked():
@@ -997,3 +1008,22 @@ if __name__ == '__main__':
     MainWindowObj.show()
 
     app.exec_()
+
+# Замечания по автоматизации:
+# 2.
+# a. При выборе папки во вьюверы должны автоматически конвевртироваться из avi и загружаться версии с максимальным FPS
+    # (это не обязательно 30FPS) готовые для кручения Lossy.
+# б. При выборе видео/гиф с другим фпс он должна загружаться в соответсвующий вьювер.
+# в. При нажатии кнопки экспорт должна производится конвертация ВСЕХ avi в выбранной папке (с соответсвующими
+    # настройками Lossy для 136x136 и 280x280), далее конвертация DAMAGED-версий, затем конвертация файла с именем
+    # [NameofComposition[Version]].mov в h264 с настройками кодека на 100%.
+# г.При повторном выборе папки, с уже произведённым экспортом повевдение программы меняться не должно - при любом
+    # совпадении по именам - овверайдить без диалоговых окон.
+# Сборка проекта:
+# 3. При нажатии на кнопку "Collect and Send Project Files" долже запускаться отдельный скрипт.
+# Кнопка должна быть активна только при выбранной папке.
+#
+# Примерный функционал БУДЕТ выглядеть так
+# а. Найти месторасположение выбранной папки.
+# б. Удалить в выбранной папке все avi файлы, др. файлы не
+# б. Перейти на уровень выше и загрузить выбранную папку с именем [NameofComposition[Version]] и папку с именем [NameofComposition[Version]]_sources на сервер.

@@ -74,7 +74,7 @@ class GifSicle(QObject):
                     print('Lossy factor of 400 is still not enough. Drop file')
                 else:
                     filesizes[lossy_factor] = damaged_filesize
-                    lossy_factor = 120
+                    lossy_factor = 0
                     self.tp = TasksPool()
                     self.add(input_file=emoji.gif_path,
                              lossy_factor=lossy_factor,
@@ -84,7 +84,7 @@ class GifSicle(QObject):
                     self.run()
                     damaged_filesize = getsize(emoji.damaged_path)
                     filesizes[lossy_factor] = damaged_filesize
-                    f_list = sorted(list(zip(filesizes.keys(),filesizes.values())))
+                    f_list = sorted(list(zip(filesizes.keys(), filesizes.values())))
                     x_distance = f_list[1][0]-f_list[0][0]  # Change in lossy
                     y_distance = f_list[1][1]-f_list[0][1]  # Change in filesize
                     delta_x = y_distance/x_distance  # Change in y over one x
@@ -103,7 +103,7 @@ class GifSicle(QObject):
                         filesize_difference = damaged_filesize - conf_damaged_filesize
                         print('Lossy: {}, Current filesize: {} bytes, Needed filesize {} bytes, Difference {} bytes'
                               .format(lossy_factor, damaged_filesize, conf_damaged_filesize, filesize_difference))
-                        # If filesize is 10Kb to less
+                        # If filesize is 10Kb too less
                         if filesize_difference < filesize_headroom:
                             # Do more quality and more size
                             lossy_factor -= 2

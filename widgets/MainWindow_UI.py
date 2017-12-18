@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\MainWindow.ui'
 #
-# Created: Sun Dec 17 01:16:45 2017
+# Created: Sun Dec 17 02:06:21 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,34 +77,6 @@ class Ui_MainWindow(object):
         self.dropdown_colortable.setObjectName("dropdown_colortable")
         self.verticalLayout_6.addWidget(self.dropdown_colortable)
         self.layout_fileops.addWidget(self.groupb_colortable)
-        self.groupb_preset = QtGui.QGroupBox(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupb_preset.sizePolicy().hasHeightForWidth())
-        self.groupb_preset.setSizePolicy(sizePolicy)
-        self.groupb_preset.setObjectName("groupb_preset")
-        self.horizontalLayout_8 = QtGui.QHBoxLayout(self.groupb_preset)
-        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.btn_savepreset = QtGui.QPushButton(self.groupb_preset)
-        self.btn_savepreset.setEnabled(False)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_savepreset.sizePolicy().hasHeightForWidth())
-        self.btn_savepreset.setSizePolicy(sizePolicy)
-        self.btn_savepreset.setObjectName("btn_savepreset")
-        self.horizontalLayout_8.addWidget(self.btn_savepreset)
-        self.btn_loadpreset = QtGui.QPushButton(self.groupb_preset)
-        self.btn_loadpreset.setEnabled(False)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_loadpreset.sizePolicy().hasHeightForWidth())
-        self.btn_loadpreset.setSizePolicy(sizePolicy)
-        self.btn_loadpreset.setObjectName("btn_loadpreset")
-        self.horizontalLayout_8.addWidget(self.btn_loadpreset)
-        self.layout_fileops.addWidget(self.groupb_preset)
         self.btn_export = QtGui.QPushButton(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -507,9 +479,6 @@ class Ui_MainWindow(object):
         self.btn_top4.setText(QtGui.QApplication.translate("MainWindow", "W.I.P.", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_input_folder.setText(QtGui.QApplication.translate("MainWindow", "Select project folder", None, QtGui.QApplication.UnicodeUTF8))
         self.groupb_colortable.setTitle(QtGui.QApplication.translate("MainWindow", "Color table (.act file)", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupb_preset.setTitle(QtGui.QApplication.translate("MainWindow", "Preset", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_savepreset.setText(QtGui.QApplication.translate("MainWindow", "W.I.P.", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_loadpreset.setText(QtGui.QApplication.translate("MainWindow", "W.I.P.", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_export.setText(QtGui.QApplication.translate("MainWindow", "Export optimized GIFs", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_collect.setText(QtGui.QApplication.translate("MainWindow", "Collect Project", None, QtGui.QApplication.UnicodeUTF8))
         self.layout_gif280.setTitle(QtGui.QApplication.translate("MainWindow", "280x280 px", None, QtGui.QApplication.UnicodeUTF8))

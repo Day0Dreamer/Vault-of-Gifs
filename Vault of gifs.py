@@ -121,8 +121,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.movie280 = QtGui.QMovie()
 
         # Add acts from folder to list widget
-        # self.dropdown_colortable.addItems(acts_in_folder())
-        self.dropdown_colortable.addItems([path.split(x)[1] for x in files_in_folder(self.working_directory, 'act')])
+        self.dropdown_colortable.addItems(acts_in_folder())
+        # self.dropdown_colortable.addItems([path.split(x)[1] for x in files_in_folder(self.working_directory, 'act')])
 
         self.source = None
         self.working_emoji = None

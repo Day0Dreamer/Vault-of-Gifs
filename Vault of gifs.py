@@ -288,7 +288,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
-            self.load_act(files_in_folder(self.working_directory, 'act')[index_of_selected_item])
+            # self.load_act(files_in_folder(self.working_directory, 'act')[index_of_selected_item])
             self.load_act(files_in_folder(act_folder, 'act')[index_of_selected_item])
 
         @self.btn_export.clicked.connect

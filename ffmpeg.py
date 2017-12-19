@@ -33,9 +33,9 @@ class FFmpeg(object):
         """
         palette_file = splitext(input_file)[0]+'.png'
         output_file = splitext(input_file)[0]+'.gif'
-        cmd = 'bin\\ffmpeg.exe -v error -i {} -vf "fps={},scale=-1:-1:flags=lanczos,palettegen=max_colors=256" -y {}'.format(input_file, fps, palette_file)
+        cmd = 'bin\\ffmpeg.exe -v error -i "{}" -vf "fps={},scale=-1:-1:flags=lanczos,palettegen=max_colors=256" -y "{}"'.format(input_file, fps, palette_file)
         self.tp.add_task(cmd)
-        cmd = 'bin\\ffmpeg.exe -v error -i {} -i {} -lavfi "fps={},scale=-1:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=none" -y {}'.format(input_file, palette_file, fps, output_file)
+        cmd = 'bin\\ffmpeg.exe -v error -i "{}" -i "{}" -lavfi "fps={},scale=-1:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=none" -y "{}"'.format(input_file, palette_file, fps, output_file)
         self.tp.add_task(cmd)
         if delete_palette:
             cmd = 'cmd.exe /c del {}'.format(palette_file)

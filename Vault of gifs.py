@@ -230,6 +230,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.actionDelete_gif_files.setText(QtGui.QApplication.translate("MainWindow", "&Clean generated gifs", None, QtGui.QApplication.UnicodeUTF8))
         @self.actionDelete_gif_files.triggered.connect
         def clean_gifs():
+            self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             for i in files_in_folder(self.working_directory, 'gif'):
                 os.remove(i)
                 self.update_video_list()
@@ -604,6 +605,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.btn_playpause280.setEnabled(True)
         self.btn_ff280.setEnabled(True)
         self.layout_gif280.setTitle(os.path.split(file280)[1])
+        self.movie280.setFileName('')  # Free (close) the previous loaded image
         self.movie280 = QtGui.QMovie(file280)
         self.gifplayer280.setMovie(self.movie280)
         self.movie280.setSpeed(self.spin_speed280.value()*100)
@@ -615,8 +617,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.btn_fb136.setEnabled(True)
         self.btn_playpause136.setEnabled(True)
         self.btn_ff136.setEnabled(True)
-        print(file136)
         self.layout_gif136.setTitle(os.path.split(file136)[1])
+        self.movie136.setFileName('')  # Free (close) the previous loaded image
         self.movie136 = QtGui.QMovie(file136)
         self.gifplayer136.setMovie(self.movie136)
         self.movie136.setSpeed(self.spin_speed136.value()*100)

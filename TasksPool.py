@@ -4,6 +4,7 @@ This module allows you to queue and launch processes using PySide's QProcess
 """
 from PySide.QtCore import QObject, QProcess, Signal, QEventLoop
 from PySide.QtGui import QApplication
+import logging
 
 
 class TasksPool(QObject):
@@ -11,6 +12,7 @@ class TasksPool(QObject):
     This class allows you to add_task() for execution queue. Launch_list() starts the queue.
     """
     task_done = Signal()
+    return_signal = Signal(str)
 
     def __init__(self):
 
@@ -19,7 +21,6 @@ class TasksPool(QObject):
         self.process = None
         if not QApplication.instance():
             self.qapp = QApplication([])
-
 
     def add_task(self, command):
         """
@@ -33,12 +34,14 @@ class TasksPool(QObject):
         """
         :param task: Is a string used to start a process
         """
-        process = QProcess(self)
-        process.finished.connect(lambda *x: print(task, 'reports done'))
-        process.finished.connect(self.task_done)
-        process.readyRead.connect(lambda *x: print(str(process.readAll())))
-        process.setProcessChannelMode(QProcess.MergedChannels)
-        process.start(task)
+        self.process = QProcess(self)
+        self.process.finished.connect(lambda *x: logging.info(str(task)+' reports done'))
+        self.process.finished.connect(lambda *x: self.return_signal.emit('►'+task))
+        self.process.finished.connect(self.task_done)
+        self.process.readyRead.connect(lambda *x: print(str(self.process.readAll())))
+        self.process.readyRead.connect(lambda *x: self.return_signal.emit(str(self.process.readAll())))
+        self.process.setProcessChannelMode(QProcess.MergedChannels)
+        self.process.start(task)
 
     def launch_list(self):
         """

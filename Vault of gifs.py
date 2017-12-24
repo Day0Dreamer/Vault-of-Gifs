@@ -13,14 +13,12 @@ import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui
 from os import path
 from time import sleep
+import logging
 
 import act_reader
 from widgets import MainWindow_UI
 from widgets import settings
 from widgets import stylesheet
-
-# from Tasks_pool3 import TasksPool
-
 
 # ################################# CONFIG ################################### #
 config = Config()
@@ -28,7 +26,13 @@ fps_delays = config()['fps_delays']
 flag_show_message_bar_timer = config()['flag_show_message_bar_timer']
 act_folder = config()['act_folder']
 damaged_filesize = int(config()['damaged_filesize'])
+warning_level = config()['warning_level']
 icons_folder_name = 'icons'
+
+# ################################ LOGGING ################################### #
+logging.basicConfig(format='%(levelname)s:%(message)s', level=warning_level)
+# todo сделать так, чтобы логгер писал имя файла откуда лог
+
 # ############################### END CONFIG ################################# #
 
 # # ################################ CONSTANTS ################################# #
@@ -150,7 +154,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.setupUi(self)
         self.setStyleSheet(stylesheet.houdini)
 
-        self.working_directory = 'input'
+        self.working_directory = 'input'  # todo Вынести это в конфиг
         self.videolist_model = None
         self.ffmpeg = None
         self.gifsicle = None
@@ -177,7 +181,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.dropdown_colortable.addItems(files_in_folder(self.working_directory, 'act'))
 
         # Update the video list on initial program start
-        self.update_video_list(self.working_directory)
+        self.update_video_list()
 
 
 
@@ -214,7 +218,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.layout3in1.addWidget(self.console)
         self.console.setMinimumWidth(500)
-        self.console.setVisible(False)
+        self.console.setVisible(True)
         @self.actionShow_console.triggered.connect
         def show_console():
             self.console.setVisible(not self.console.isVisible())
@@ -259,7 +263,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             directory = QtGui.QFileDialog.getExistingDirectory(self)
             if directory:
                 self.working_directory = directory
-                self.update_video_list(self.working_directory)
+                self.update_video_list()
 
         @self.list_videoslist.activated.connect
         def avi_activated_decorated(video_list_item):
@@ -267,11 +271,16 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             if not self.working_emoji.has_gif:
                 self.statusbar.showMessage('Generating the gif')
                 self.ffmpeg = FFmpeg()
+                self.ffmpeg.return_signal.connect(self.console_add)
                 self.ffmpeg.add(self.working_emoji.full_path, self.working_emoji.fps)
+                self.console_add('='*50)
+                self.console_add('Converting {} using ffmpeg'.format(self.working_emoji.full_path))
                 self.ffmpeg.run()
+                self.console_add('='*50+'\n')
+                self.ffmpeg.return_signal.disconnect(self.console_add)
                 self.working_file = self.working_emoji.full_path
                 self.load_gif(self.working_emoji.gif_path)
-                self.update_video_list(self.working_directory)
+                self.update_video_list()
             else:
                 self.load_gif(self.working_emoji.gif_path)
 
@@ -414,7 +423,15 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 #     color_map=color_table,
                 #     output_file=output_file,
                 #     delay=3)
-            GifSicle(self.working_emoji, lossy_factor, color_table)
+
+
+            self.gc = GifSicle(self.working_emoji, lossy_factor, color_table)
+            # self.gc = GifSicle() todo разобраться что происходит тут
+            # self.gc.return_signal.connect(lambda x: print(x))
+            # self.gc.add(self.working_emoji, lossy_factor, color_table)
+            # self.gc.run()
+                # .return_signal.connect(self.console_add)
+
             self.load_gif(output_file)
             # COMMENTED AS OF GIFSICLE METHOD
             # self.proc.waitForFinished()
@@ -559,7 +576,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         def minimal_window_size():
             self.resize(1, 1)
 
-    def update_video_list(self, folder='input', ext='avi'):
+    def update_video_list(self, folder=None, ext='avi'):
+        if not folder:
+            folder = self.working_directory
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext)}
 
         self.videolist_model = VideoListModel(emoji_dict)
@@ -633,7 +652,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # self.gifplayer136.setScaledContents(True)
 
     def console_add(self, log_input):
-        self.console.append(str(log_input).rstrip())
+        self.console.append(str(log_input))
+        # self.console.append(str(log_input).rstrip())
 
     # ########################### Not Used Functions ############################ #
 

@@ -15,6 +15,7 @@ conf_damaged_filesize = int(config()['damaged_filesize'])*1024
 
 
 class GifSicle(QObject):
+    return_signal = Signal(str)
     loop_done = Signal()
 
     def __init__(self, emoji=None, lossy_factor=None, color_map=None, to_lossy=None, to_damaged=None):
@@ -24,6 +25,9 @@ class GifSicle(QObject):
         """
         super(GifSicle, self).__init__()
         self.tp = TasksPool()
+        # Relay the tasks pool return message to the user of this module
+        self.tp.return_signal.connect(lambda x: self.return_signal.emit(x))
+
         # If we supply Emoji object, then
         if isinstance(emoji, Emoji):
             if emoji.has_gif:

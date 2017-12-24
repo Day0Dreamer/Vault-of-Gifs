@@ -4,17 +4,23 @@ input_file is a full path
 Returns input_file with .gif extension"""
 
 from os.path import splitext, exists
+
+from PySide.QtCore import Signal, QObject
 from TasksPool import TasksPool
 from emoji import Emoji
 
 
-class FFmpeg(object):
+class FFmpeg(QObject):
+    return_signal = Signal(str)
+
     def __init__(self, emoji=None):
         """
         This class allows you to add() video files and convert them to gifs.
         Output files are going to be in the same folder as the input files.
         """
+        super(FFmpeg, self).__init__()
         self.tp = TasksPool()
+        self.tp.return_signal.connect(lambda x: self.return_signal.emit(x))
 
         # If we supply Emoji object, then
         if isinstance(emoji, Emoji):
@@ -23,6 +29,7 @@ class FFmpeg(object):
                 self.run()
             else:
                 print(__name__, 'Warning: {} has no video file'.format(emoji.name_no_ext))
+                # todo убрать этот print
 
     def add(self, input_file, fps, delete_palette=True):
         """

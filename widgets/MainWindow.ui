@@ -19,40 +19,6 @@
      <number>9</number>
     </property>
     <item>
-     <layout class="QHBoxLayout" name="layout_topshelf">
-      <item>
-       <widget class="QPushButton" name="btn_top1">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>Convert MOV &gt; MP4 (h264)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_top3">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>W.I.P.</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_top4">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>W.I.P.</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
      <widget class="Line" name="separator_topshelf"/>
     </item>
     <item>
@@ -908,8 +874,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
+    <addaction name="actionChooseFolder"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -925,6 +890,7 @@
     </property>
     <addaction name="actionConfig"/>
     <addaction name="actionDelete_temp_files"/>
+    <addaction name="actionShow_console"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOptions"/>
@@ -941,9 +907,9 @@
     </sizepolicy>
    </property>
   </widget>
-  <action name="actionOpen">
+  <action name="actionChooseFolder">
    <property name="text">
-    <string>&amp;Open</string>
+    <string>Choo&amp;se project folder</string>
    </property>
   </action>
   <action name="actionSave">
@@ -969,6 +935,11 @@
   <action name="actionDelete_temp_files">
    <property name="text">
     <string>&amp;Clean temp files</string>
+   </property>
+  </action>
+  <action name="actionShow_console">
+   <property name="text">
+    <string>Show &amp;console</string>
    </property>
   </action>
  </widget>

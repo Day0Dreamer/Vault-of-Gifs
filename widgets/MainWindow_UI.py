@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\MainWindow.ui'
 #
-# Created: Sun Dec 17 02:06:21 2017
+# Created: Sun Dec 24 04:10:43 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,21 +18,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout_2.setContentsMargins(-1, 9, -1, -1)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.layout_topshelf = QtGui.QHBoxLayout()
-        self.layout_topshelf.setObjectName("layout_topshelf")
-        self.btn_top1 = QtGui.QPushButton(self.centralwidget)
-        self.btn_top1.setEnabled(True)
-        self.btn_top1.setObjectName("btn_top1")
-        self.layout_topshelf.addWidget(self.btn_top1)
-        self.btn_top3 = QtGui.QPushButton(self.centralwidget)
-        self.btn_top3.setEnabled(False)
-        self.btn_top3.setObjectName("btn_top3")
-        self.layout_topshelf.addWidget(self.btn_top3)
-        self.btn_top4 = QtGui.QPushButton(self.centralwidget)
-        self.btn_top4.setEnabled(False)
-        self.btn_top4.setObjectName("btn_top4")
-        self.layout_topshelf.addWidget(self.btn_top4)
-        self.verticalLayout_2.addLayout(self.layout_topshelf)
         self.separator_topshelf = QtGui.QFrame(self.centralwidget)
         self.separator_topshelf.setObjectName("separator_topshelf")
         self.verticalLayout_2.addWidget(self.separator_topshelf)
@@ -438,8 +423,8 @@ class Ui_MainWindow(object):
         self.statusbar.setSizePolicy(sizePolicy)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.actionOpen = QtGui.QAction(MainWindow)
-        self.actionOpen.setObjectName("actionOpen")
+        self.actionChooseFolder = QtGui.QAction(MainWindow)
+        self.actionChooseFolder.setObjectName("actionChooseFolder")
         self.actionSave = QtGui.QAction(MainWindow)
         self.actionSave.setObjectName("actionSave")
         self.actionExit = QtGui.QAction(MainWindow)
@@ -450,13 +435,15 @@ class Ui_MainWindow(object):
         self.actionConfig.setObjectName("actionConfig")
         self.actionDelete_temp_files = QtGui.QAction(MainWindow)
         self.actionDelete_temp_files.setObjectName("actionDelete_temp_files")
-        self.menuFile.addAction(self.actionOpen)
-        self.menuFile.addAction(self.actionSave)
+        self.actionShow_console = QtGui.QAction(MainWindow)
+        self.actionShow_console.setObjectName("actionShow_console")
+        self.menuFile.addAction(self.actionChooseFolder)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
         self.menuHelp.addAction(self.actionAbout)
         self.menuOptions.addAction(self.actionConfig)
         self.menuOptions.addAction(self.actionDelete_temp_files)
+        self.menuOptions.addAction(self.actionShow_console)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuOptions.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -474,9 +461,6 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_top1.setText(QtGui.QApplication.translate("MainWindow", "Convert MOV > MP4 (h264)", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_top3.setText(QtGui.QApplication.translate("MainWindow", "W.I.P.", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_top4.setText(QtGui.QApplication.translate("MainWindow", "W.I.P.", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_input_folder.setText(QtGui.QApplication.translate("MainWindow", "Select project folder", None, QtGui.QApplication.UnicodeUTF8))
         self.groupb_colortable.setTitle(QtGui.QApplication.translate("MainWindow", "Color table (.act file)", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_export.setText(QtGui.QApplication.translate("MainWindow", "Export optimized GIFs", None, QtGui.QApplication.UnicodeUTF8))
@@ -505,10 +489,11 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.menuOptions.setTitle(QtGui.QApplication.translate("MainWindow", "&Options", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "&Open", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionChooseFolder.setText(QtGui.QApplication.translate("MainWindow", "Choo&se project folder", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "&Save", None, QtGui.QApplication.UnicodeUTF8))
         self.actionExit.setText(QtGui.QApplication.translate("MainWindow", "E&xit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConfig.setText(QtGui.QApplication.translate("MainWindow", "C&onfig", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDelete_temp_files.setText(QtGui.QApplication.translate("MainWindow", "&Clean temp files", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionShow_console.setText(QtGui.QApplication.translate("MainWindow", "Show &console", None, QtGui.QApplication.UnicodeUTF8))
 

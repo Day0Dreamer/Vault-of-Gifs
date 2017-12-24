@@ -1,15 +1,18 @@
 # encoding: utf-8
 import os
+
+import shutil
+
 from gifsicle import GifSicle
 from ffmpeg import FFmpeg
 from emoji import Emoji
 from export import Conversion
-
 from config import Config
 
 import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui
 from os import path
+from time import sleep
 
 import act_reader
 from widgets import MainWindow_UI
@@ -38,17 +41,6 @@ icons_folder_name = 'icons'
 # ITEM_DAMAGED =       0x105
 # ITEM_FULL_PATH =     0x106
 # # ############################### END CONSTANTS ############################## #
-
-def gifs_in_folder(folder='input'):
-    return [os.path.join(os.path.abspath(folder), gif) for gif in os.listdir(folder) if '.gif' in gif]
-
-
-def acts_in_folder():
-    return [os.path.join(os.path.abspath(act_folder), act) for act in os.listdir('act') if '.act' in act]
-
-
-def avis_in_folder(folder):
-    return [os.path.join(os.path.abspath(folder), avi) for avi in os.listdir(folder) if '.avi' in avi]
 
 
 def files_in_folder(folder, ext):
@@ -93,6 +85,64 @@ class VideoListModel(QtCore.QAbstractListModel):
     def update(self):
         pass
 
+
+# todo запилить модель для списка Act
+class ActListModel(QtCore.QAbstractListModel):
+
+    def __init__(self):
+        super(ActListModel, self).__init__()
+
+    def rowCount(self, parent):
+        return len(self.emoji_dict)
+
+    def data(self, index, role):
+        # For each parse through get the emoji using the index int
+        emoji = self.emoji_dict[self.emoji_list[index.row()]]
+        # Use first UserRole as a handle to the Emoji object
+        if role == 32:
+            return emoji
+        # Setup the text we see in the list
+        if role == QtCore.Qt.DisplayRole:
+            return str(emoji.name)
+        # Setup the icon we see in the list
+        if role == QtCore.Qt.DecorationRole:
+            icon_path = path.join(path.curdir, icons_folder_name, "{}_{}.png".format(emoji.resolution, emoji.fps))
+            if path.exists(icon_path):
+                icon = QtGui.QIcon(icon_path)
+            else:
+                icon = QtGui.QPixmap(32, 32)
+            return icon
+        # Setup the tooltip
+        if role == QtCore.Qt.ToolTipRole:
+            return emoji.full_info().replace(' | ', '\n')
+        if role == QtCore.Qt.BackgroundRole:
+            if emoji.has_gif:
+                return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
+
+    def update(self):
+        pass
+
+
+def make_folder_structure():
+    os.makedirs('temp', exist_ok=True)
+    os.makedirs('bin', exist_ok=True)
+    os.makedirs('input', exist_ok=True)
+    os.makedirs('act', exist_ok=True)
+make_folder_structure()
+
+
+def clean_folder(folder: str):
+    for root, dirs, files in os.walk(folder, topdown=False):
+        for name in files:
+            try:
+                os.remove(os.path.join(root, name))
+            except Exception as e:
+                return e
+        sleep(.01)
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+
+
 class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
     def __init__(self):
@@ -100,125 +150,118 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.setupUi(self)
         self.setStyleSheet(stylesheet.houdini)
 
-        os.makedirs('temp', exist_ok=True)
-        os.makedirs('bin', exist_ok=True)
-        os.makedirs('input', exist_ok=True)
-        os.makedirs('act', exist_ok=True)
         self.working_directory = 'input'
-
         self.videolist_model = None
         self.ffmpeg = None
         self.gifsicle = None
-        # self.launcher = Launcher()
-        # self.main_task_pool = TasksPool()
-
-        # ############################ MODIFY INTERFACE ############################## #
-        # self.setGeometry(200, 200, 40, 40)
-
-        self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
-
         self.movie136 = QtGui.QMovie()
         self.movie280 = QtGui.QMovie()
-
-        # Add acts from folder to list widget
-        self.dropdown_colortable.addItems(acts_in_folder())
-        # self.dropdown_colortable.addItems([path.split(x)[1] for x in files_in_folder(self.working_directory, 'act')])
-
         self.source = None
         self.working_emoji = None
         self.lossy_file_size = None
         self.lossy_factor = None
         self.output_file = None
-        self.file_watch = QtCore.QFileSystemWatcher()
+        self.original_280_gif = None
+        self.original_136_gif = None
+        # todo разобраться с self.launcher self.launcher = Launcher()
+        # todo разобраться с self.main_task_pool self.main_task_pool = TasksPool()
+
+        # ############################ MODIFY INTERFACE ############################## #
+        # todo исправить размер интерфейса self.setGeometry(200, 200, 40, 40)
+
+        # Max size of icons in video list
+        self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
+
+        # Add acts from folder to list widget
+        # todo заменить добавление act в модель листа
+        self.dropdown_colortable.addItems(files_in_folder(self.working_directory, 'act'))
 
         # Update the video list on initial program start
         self.update_video_list(self.working_directory)
-        self.update_gifs_list(self.working_directory)
 
-        ################################### ??? ###################################### #
 
-        # self.main_task_pool.allTasksCompleteSignal.connect(self.selector)
 
         # ################################# TOP BAR ################################## #
+        # File menu
+        # Connect "Open folder" to other Open folder button
+        self.actionChooseFolder.triggered.connect(self.btn_input_folder.clicked)
+
         @self.actionExit.triggered.connect
         def exit_ui():
             exit(0)
 
+        # Options menu
         @self.actionConfig.triggered.connect
         def call_settings():
             self.dial = settings.QtSettings()
             self.dial.exec_()
+        # todo доработать окно settings
 
         @self.actionDelete_temp_files.triggered.connect
         def clear_temp_folder():
-            for file in os.listdir('temp'):
-                os.remove(os.path.join('temp', file))
+            if len(os.listdir('temp')) != 0:
+                cleaning_result = clean_folder('temp')
+                if cleaning_result:
+                    self.console_add(cleaning_result)
+                sleep(.1)
+                if len(os.listdir('temp')) == 0:
+                    self.statusbar.showMessage('Temp folder is cleaned')
+                else:
+                    self.statusbar.showMessage('Trying to clean temp folder, but failed')
 
-        # ################################# TOP ROW ################################## #
-        # self.separator_topshelf.hide()
-        self.btn_top1.hide()
-        self.btn_top3.hide()
-        self.btn_top4.hide()
-
-        @self.btn_top1.clicked.connect
-        def convert_mov_to_mp4():
-            print(QtGui.QFileDialog())
-            files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
-                                                              "QFileDialog.getOpenFileNames()", '.',
-                                                              "All Files (*);;MOV (*.mov)", "MOV (*.mov)")
-            print(files, filtr)
-            for input_file in files:
-                self.launch_process('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
-                                    '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
-
-
-
-        self.btn_top3.setEnabled(True)
-        @self.btn_top3.clicked.connect
-        def btn3():
-            # self.load_palette('SteffonDiggsEmoji-02-280x280-15FPS.avi_palette.png')
-            # main_task_pool.add_task('bin/fake_renderer.exe')
-            # self.signal_update280.emit()
-            pass
-
+        # todo вынести добавление консоли в другое место
         self.console = QtGui.QTextBrowser(self)
         self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.layout3in1.addWidget(self.console)
         self.console.setMinimumWidth(500)
         self.console.setVisible(False)
-        self.btn_top4.setText('Toggle console')
-        self.btn_top4.setCheckable(True)
-        self.btn_top4.setEnabled(True)
-        @self.btn_top4.clicked.connect
-        def toggle_console():
-            self.console.setVisible(self.btn_top4.isChecked())
-            self.resize(0,0)
+        @self.actionShow_console.triggered.connect
+        def show_console():
+            self.console.setVisible(not self.console.isVisible())
+            if self.console.isVisible():
+                self.statusbar.showMessage('Console is enabled')
+            else:
+                self.statusbar.showMessage('Console is disabled')
 
+        # Button for deleting gif files in the working directory
+        self.actionDelete_gif_files = QtGui.QAction(self)
+        self.actionDelete_gif_files.setObjectName("actionDelete_temp_files")
+        self.menuOptions.addAction(self.actionDelete_gif_files)
+        self.actionDelete_gif_files.setText(QtGui.QApplication.translate("MainWindow", "&Clean generated gifs", None, QtGui.QApplication.UnicodeUTF8))
+        @self.actionDelete_gif_files.triggered.connect
+        def clean_gifs():
+            for i in files_in_folder(self.working_directory, 'gif'):
+                os.remove(i)
+                self.update_video_list()
+
+        # Button for unloading running gifs in the viewports
+        self.actionUnloadGifs = QtGui.QAction(self)
+        self.actionUnloadGifs.setObjectName("actionDelete_temp_files")
+        self.menuOptions.addAction(self.actionUnloadGifs)
+        self.actionUnloadGifs.setText(QtGui.QApplication.translate("MainWindow", "&Unload gifs", None, QtGui.QApplication.UnicodeUTF8))
+        @self.actionUnloadGifs.triggered.connect
+        def unload_gifs():
+            self.movie136.setFileName('')
+            self.movie280.setFileName('')
+
+        # About menu
+        @self.actionAbout.triggered.connect
+        def call_about():
+            self.dial = settings.QtSettings() # Изменить
+            self.dial.exec_()
+        # todo доработать окно about
 
         # ############################### LEFT COLUMN ################################ #
         @self.btn_input_folder.clicked.connect
         def input_folder():
-            # self.list_videoslist.clear()
-            # self.list_videoslist.addItems(avis_in_folder())
-
-            # Add gifs from folder to list widget
-            # for i in emoji_list():
-            #     print(i)
-            #     self.list_gifslist.addItem(i.filename)
-
             # options = QtGui.QFileDialog.DontResolveSymlinks | QtGui.QFileDialog.ShowDirsOnly
-            directory = QtGui.QFileDialog.getExistingDirectory()
+            directory = QtGui.QFileDialog.getExistingDirectory(self)
             if directory:
                 self.working_directory = directory
                 self.update_video_list(self.working_directory)
-                self.update_gifs_list(self.working_directory)
 
-        # self.list_videoslist.activated.connect(lambda x: self.load280(x.data(32).gif_path))
         @self.list_videoslist.activated.connect
         def avi_activated_decorated(video_list_item):
-            avi_activated(video_list_item)
-
-        def avi_activated(video_list_item):
             self.working_emoji = video_list_item.data(32)
             if not self.working_emoji.has_gif:
                 self.statusbar.showMessage('Generating the gif')
@@ -230,61 +273,6 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.update_video_list(self.working_directory)
             else:
                 self.load_gif(self.working_emoji.gif_path)
-
-
-
-        # @self.list_gifslist.itemActivated.connect
-        # def gif_double_clicked_decorated():
-        #     gif_double_clicked('gif')
-
-        self.original_280_gif = None
-        self.original_136_gif = None
-
-        def gif_double_clicked(avi_or_gif):
-            """Takes an item of videos list, reads ITEM_FULL_PATH,
-            replaces extension with .gif and loads it to viewport"""
-
-            if avi_or_gif == 'avi':
-                if len(self.list_videoslist.selectedItems()) > 2:
-                    selected_items = [self.list_videoslist.selectedItems()[0], self.list_videoslist.selectedItems()[-1]]
-                else:
-                    selected_items = self.list_videoslist.selectedItems()
-            if avi_or_gif == 'gif':
-                if len(self.list_gifslist.selectedItems()) > 2:
-                    selected_items = [self.list_gifslist.selectedItems()[0], self.list_gifslist.selectedItems()[-1]]
-                else:
-                    selected_items = self.list_gifslist.selectedItems()
-
-            for item in selected_items:
-                video_file_path = item.data(ITEM_FULL_PATH)
-                # Launch avi's gif counterparts
-                if os.path.splitext(video_file_path)[1] != 'gif':
-                    video_file_path = os.path.splitext(video_file_path)[0] + '.gif'
-
-                # If it is 136 file > load it to 136 viewport
-                if '136' in video_file_path:
-                    self.load136(video_file_path)
-                    self.original_136_gif = video_file_path
-                # If it is 280 file > load it to 280 viewport
-                elif '280' in video_file_path:
-                    vid280 = self.load280(video_file_path)
-                    self.original_280_gif = video_file_path
-                    if vid280:
-                        self.statusbar.showMessage('280px: Gif is loaded' + video_file_path)
-            # video_file_path = video_list_item.data(ITEM_FULL_PATH)
-            # # Launch avi's gif counterparts
-            # if os.path.splitext(video_file_path)[1] != 'gif':
-            #     video_file_path = os.path.splitext(video_file_path)[0] + '.gif'
-            # # If it is 136 file > load it to 136 viewport
-            # if '136' in video_file_path:
-            #     load136(video_file_path)
-            #     self.original_136_gif = video_file_path
-            # # If it is 280 file > load it to 280 viewport
-            # elif '280' in video_file_path:
-            #     vid280 = self.load280(video_file_path)
-            #     self.original_280_gif = video_file_path
-            #     if vid280:
-            #         self.statusbar.showMessage('280px: Gif is loaded')
 
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
@@ -592,24 +580,6 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         #         emoji_object.has_raw_gif = False
         #     self.list_videoslist.addItem(item)
 
-    def update_gifs_list(self, folder='input', ext='gif'):
-        pass
-        # self.list_gifslist.clear()
-        # # Add objects pre-created list items to the list
-        # for i in files_in_folder(folder, ext):
-        #     emoji_object = Emoji(i)
-        #     # Get the video-list item out of the Emoji object
-        #     item = emoji_object.video_list_item
-        #     # Check if avi has gif counterpart
-        #     gif_full_path = os.path.splitext(item.data(ITEM_FULL_PATH))[0]+'.gif'
-        #     if os.path.exists(gif_full_path):
-        #         item.setBackground(QtGui.QColor(0, 255, 0, 32))
-        #         emoji_object.has_raw_gif = True
-        #     else:
-        #         item.setBackground(QtGui.QColor(255, 255, 255, 255))
-        #         emoji_object.has_raw_gif = False
-        #     self.list_gifslist.addItem(item)
-
     # ################################# LOADERS ################################## #
 
     def load_act(self, act_file):
@@ -662,6 +632,21 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
     def console_add(self, log_input):
         self.console.append(str(log_input).rstrip())
+
+    # ########################### Not Used Functions ############################ #
+
+    def convert_mov_to_mp4(self):
+        print(QtGui.QFileDialog())
+        files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
+                                                          "QFileDialog.getOpenFileNames()", '.',
+                                                          "All Files (*);;MOV (*.mov)", "MOV (*.mov)")
+        print(files, filtr)
+        for input_file in files:
+            self.launch_process('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
+                                '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
+
+    def minimal_size(self):
+        self.resize(0, 0)
 
     # def launch_process(self, command, source=None, working_file=''):
     #     self.console_add('='*50+'\n' + 'Launched ' + command)

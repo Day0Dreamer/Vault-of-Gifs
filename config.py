@@ -111,7 +111,9 @@ class Config(object):
                            '100': 1
                            },
             'logging_level': 'CRITICAL',
-            'logging_level_comment': 'CRITICAL, ERROR, WARNING, INFO, DEBUG'
+            'logging_level_comment': 'CRITICAL, ERROR, WARNING, INFO, DEBUG',
+            'console_enabled': False,
+            'name_delimiter': '_'
         }
         self.config_filename = 'config.json'
 

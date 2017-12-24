@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\MainWindow.ui'
 #
-# Created: Sun Dec 24 04:10:43 2017
+# Created: Sun Dec 24 18:24:12 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -72,6 +72,7 @@ class Ui_MainWindow(object):
         self.btn_export.setObjectName("btn_export")
         self.layout_fileops.addWidget(self.btn_export)
         self.btn_collect = QtGui.QPushButton(self.centralwidget)
+        self.btn_collect.setEnabled(False)
         self.btn_collect.setMinimumSize(QtCore.QSize(0, 49))
         self.btn_collect.setObjectName("btn_collect")
         self.layout_fileops.addWidget(self.btn_collect)

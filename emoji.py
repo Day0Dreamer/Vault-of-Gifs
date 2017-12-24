@@ -1,10 +1,13 @@
 # encoding: utf-8
+import warnings
 from os import path
 from config import Config
 import re
 
 __config = Config()
 fps_delays = __config()['fps_delays']
+delimiter = __config()['name_delimiter']
+
 
 class Emoji(object):
     def __init__(self, filename):
@@ -23,15 +26,14 @@ class Emoji(object):
         # Set filename without extension and extension
         self.name_no_ext, self.ext = path.splitext(self.filename)
         # Separate file name to it's parts
-        name_and_version, self.resolution, self.fps = self.name_no_ext.rsplit('-', 2)
+        # name_and_version, self.resolution, self.fps = self.name_no_ext.rsplit(delimiter, 2)
+        name_and_version = re.search(r'^.+(?=.\d{3}x\d{3})', self.name_no_ext, re.IGNORECASE).group()
+        self.resolution = re.search(r'\d{3}x\d{3}', self.name_no_ext, re.IGNORECASE).group()
+        self.fps = re.search(r'\d{2}fps', self.name_no_ext, re.IGNORECASE).group()
         # Extract name and version from user input
-        self.name, self.version = re.split('(\d*$)', name_and_version)[:2]
-        # Remove spaces from name in the beginning and the end
-        self.name = self.name.strip()
-        # Remove '-' from name in the beginning and the end
-        self.name = self.name.strip('-')
-        # else:
-        #     raise Exception('Something went wrong with the name of {}'.format(filename))
+        self.name, self.version = re.split('(\d+$)', name_and_version)[:2]
+        # Remove spaces from name in the beginning and the end, remove '-' from name, remove '_' from name.
+        self.name = self.name.strip().strip('-').strip('_')
         # Set FPS to caps and remove the letters FPS
         self.fps = self.fps.upper().rstrip('FPS')
         # Set delay using config
@@ -48,6 +50,16 @@ class Emoji(object):
         self.damaged_path = path.splitext(self.full_path)[0]+'-lossy-damaged'+'.gif'
         if path.exists(self.damaged_path):
             self.has_damaged = True
+
+    def __new__(cls, *args, **kwargs):
+        # Emoji-02-280x280-20FPS-lossy.gif
+        name_filter = re.compile(r'.*{d}\d{{3}}x\d{{3}}{d}.*'.format(d=delimiter))
+        if re.match(name_filter, path.split(args[0])[1]):
+            return super(Emoji, cls).__new__(cls)
+        else:
+            warnings.warn('File {} does not apply to naming convention'.format(args[0]))
+            return
+
 
     def __repr__(self):
         data = 'Name: {} | version: {} | resolution: {} | fps: {} | gif: {} | lossy: {} | damaged: {}'\

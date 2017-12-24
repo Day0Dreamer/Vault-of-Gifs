@@ -27,6 +27,7 @@ flag_show_message_bar_timer = config()['flag_show_message_bar_timer']
 act_folder = config()['act_folder']
 damaged_filesize = int(config()['damaged_filesize'])
 warning_level = config()['warning_level']
+console_flag = config()['console_enabled']
 icons_folder_name = 'icons'
 
 # ################################ LOGGING ################################### #
@@ -183,8 +184,6 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # Update the video list on initial program start
         self.update_video_list()
 
-
-
         # ################################# TOP BAR ################################## #
         # File menu
         # Connect "Open folder" to other Open folder button
@@ -218,7 +217,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.layout3in1.addWidget(self.console)
         self.console.setMinimumWidth(500)
-        self.console.setVisible(True)
+        self.console.setVisible(console_flag)
         @self.actionShow_console.triggered.connect
         def show_console():
             self.console.setVisible(not self.console.isVisible())
@@ -268,6 +267,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         @self.list_videoslist.activated.connect
         def avi_activated_decorated(video_list_item):
             self.working_emoji = video_list_item.data(32)
+            # Calling FFmpeg if there is no gif created
             if not self.working_emoji.has_gif:
                 self.statusbar.showMessage('Generating the gif')
                 self.ffmpeg = FFmpeg()
@@ -284,6 +284,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             else:
                 self.load_gif(self.working_emoji.gif_path)
 
+        # todo здесь изменить обработку act листа
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
             # self.load_act(files_in_folder(self.working_directory, 'act')[index_of_selected_item])
@@ -291,24 +292,14 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.btn_export.clicked.connect
         def btn_export_clicked():
-            # print(self.working_directory, self.spin_quality280.text())
-            self.conversion = Conversion(self.working_directory, self.spin_quality280.text())
-
-        #     if self.list_videoslist.selectedItems():
-        #         list_duplicate = [i.data(ITEM_EMOJI_OBJECT) for i in self.list_videoslist.selectedItems()]
-        #         for i in list_duplicate:
-        #         # for i in self.list_videoslist.selectedItems():
-        #         #     self.export(i.data(ITEM_EMOJI_OBJECT))
-        #             self.working_emoji = i
-        #             self.export(self.working_emoji)
-        #     else:
-        #         self.statusbar.showMessage('Nothing selected for export')
-        #
-        # self.groupb_preset.hide()
+            # Dictionary two lossy values from their interface spinners
+            lossy_dict = {'136': self.spin_quality136.text(), '280': self.spin_quality280.text()}
+            # Start export conversion using dir user selected and lossy dict
+            self.conversion = Conversion(self.working_directory, lossy_dict)
 
         @self.btn_collect.clicked.connect
         def collect():
-            minimal_window_size()
+            self.console_add('Collecting process has started')
 
         # ############################## MIDDLE COLUMN ############################### #
 
@@ -579,10 +570,12 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
     def update_video_list(self, folder=None, ext='avi'):
         if not folder:
             folder = self.working_directory
-        emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext)}
-
-        self.videolist_model = VideoListModel(emoji_dict)
-        self.list_videoslist.setModel(self.videolist_model)
+        if len(files_in_folder(folder, ext)) > 0:
+            # emoji_dict = {print(Emoji(emoji)) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
+            emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
+            self.videolist_model = VideoListModel(emoji_dict)
+            self.list_videoslist.setModel(self.videolist_model)
+            self.btn_collect.setEnabled(True)
 
         # self.list_videoslist.clear()
         # # Add objects pre-created list items to the list

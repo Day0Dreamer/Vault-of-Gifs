@@ -55,7 +55,12 @@ class Conversion(QObject):
         for item in emoji_dict.keys():
             if not emoji_dict[item].has_lossy:
                 print(emoji_dict[item].name, 'lossy file missing, creating one')
-                GifSicle(emoji_dict[item], self.lossy_factor, self.color_map, to_lossy=True)
+                # Get the proper lossy value for the gifsicle
+                if '136' in emoji_dict[item].resolution:
+                    lossy_factor = self.lossy_factor['136']
+                elif '280' in emoji_dict[item].resolution:
+                    lossy_factor = self.lossy_factor['280']
+                GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_lossy=True)
         QTimer.singleShot(0, self.conversion2_done)
 
     def gifs2damaged(self):
@@ -63,7 +68,12 @@ class Conversion(QObject):
         for item in emoji_dict.keys():
             if not emoji_dict[item].has_damaged:
                 print(emoji_dict[item].name, 'damaged file missing, creating')
-                GifSicle(emoji_dict[item], self.lossy_factor, self.color_map, to_damaged=True)
+                # Get the proper lossy value for the gifsicle
+                if '136' in emoji_dict[item].resolution:
+                    lossy_factor = self.lossy_factor['136']
+                elif '280' in emoji_dict[item].resolution:
+                    lossy_factor = self.lossy_factor['280']
+                GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_damaged=True)
         QTimer.singleShot(0, self.conversion3_done)
 
     def files_in_folder(self, folder='input', ext='avi'):

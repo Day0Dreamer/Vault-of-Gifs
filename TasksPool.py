@@ -36,9 +36,9 @@ class TasksPool(QObject):
         """
         self.process = QProcess(self)
         self.process.finished.connect(lambda *x: logging.info(str(task)+' reports done'))
-        self.process.finished.connect(lambda *x: self.return_signal.emit('►'+task))
+        self.process.finished.connect(lambda *x: self.return_signal.emit('►'+task+'◄reports complete'))
         self.process.finished.connect(self.task_done)
-        self.process.readyRead.connect(lambda *x: print(str(self.process.readAll())))
+        # self.process.readyRead.connect(lambda *x: print(str(self.process.readAll())))
         self.process.readyRead.connect(lambda *x: self.return_signal.emit(str(self.process.readAll())))
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.start(task)

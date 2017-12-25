@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\MainWindow.ui'
 #
-# Created: Sun Dec 24 18:24:12 2017
+# Created: Mon Dec 25 21:12:06 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -61,6 +61,9 @@ class Ui_MainWindow(object):
         self.dropdown_colortable.setSizePolicy(sizePolicy)
         self.dropdown_colortable.setObjectName("dropdown_colortable")
         self.verticalLayout_6.addWidget(self.dropdown_colortable)
+        self.btn_import_act = QtGui.QPushButton(self.groupb_colortable)
+        self.btn_import_act.setObjectName("btn_import_act")
+        self.verticalLayout_6.addWidget(self.btn_import_act)
         self.layout_fileops.addWidget(self.groupb_colortable)
         self.btn_export = QtGui.QPushButton(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
@@ -438,6 +441,8 @@ class Ui_MainWindow(object):
         self.actionDelete_temp_files.setObjectName("actionDelete_temp_files")
         self.actionShow_console = QtGui.QAction(MainWindow)
         self.actionShow_console.setObjectName("actionShow_console")
+        self.actionmov2mp4 = QtGui.QAction(MainWindow)
+        self.actionmov2mp4.setObjectName("actionmov2mp4")
         self.menuFile.addAction(self.actionChooseFolder)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
@@ -445,6 +450,7 @@ class Ui_MainWindow(object):
         self.menuOptions.addAction(self.actionConfig)
         self.menuOptions.addAction(self.actionDelete_temp_files)
         self.menuOptions.addAction(self.actionShow_console)
+        self.menuOptions.addAction(self.actionmov2mp4)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuOptions.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -464,6 +470,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_input_folder.setText(QtGui.QApplication.translate("MainWindow", "Select project folder", None, QtGui.QApplication.UnicodeUTF8))
         self.groupb_colortable.setTitle(QtGui.QApplication.translate("MainWindow", "Color table (.act file)", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_import_act.setText(QtGui.QApplication.translate("MainWindow", "Import act", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_export.setText(QtGui.QApplication.translate("MainWindow", "Export optimized GIFs", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_collect.setText(QtGui.QApplication.translate("MainWindow", "Collect Project", None, QtGui.QApplication.UnicodeUTF8))
         self.layout_gif280.setTitle(QtGui.QApplication.translate("MainWindow", "280x280 px", None, QtGui.QApplication.UnicodeUTF8))
@@ -497,4 +504,5 @@ class Ui_MainWindow(object):
         self.actionConfig.setText(QtGui.QApplication.translate("MainWindow", "C&onfig", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDelete_temp_files.setText(QtGui.QApplication.translate("MainWindow", "&Clean temp files", None, QtGui.QApplication.UnicodeUTF8))
         self.actionShow_console.setText(QtGui.QApplication.translate("MainWindow", "Show &console", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionmov2mp4.setText(QtGui.QApplication.translate("MainWindow", "Convert &mov to mp4", None, QtGui.QApplication.UnicodeUTF8))
 

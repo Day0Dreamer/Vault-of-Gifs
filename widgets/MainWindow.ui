@@ -82,6 +82,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QPushButton" name="btn_import_act">
+             <property name="text">
+              <string>Import act</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -894,6 +901,7 @@
     <addaction name="actionConfig"/>
     <addaction name="actionDelete_temp_files"/>
     <addaction name="actionShow_console"/>
+    <addaction name="actionmov2mp4"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOptions"/>
@@ -943,6 +951,11 @@
   <action name="actionShow_console">
    <property name="text">
     <string>Show &amp;console</string>
+   </property>
+  </action>
+  <action name="actionmov2mp4">
+   <property name="text">
+    <string>Convert &amp;mov to mp4</string>
    </property>
   </action>
  </widget>

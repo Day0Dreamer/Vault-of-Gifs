@@ -60,7 +60,6 @@ class Emoji(object):
             warnings.warn('File {} does not apply to naming convention'.format(args[0]))
             return
 
-
     def __repr__(self):
         data = 'Name: {} | version: {} | resolution: {} | fps: {} | gif: {} | lossy: {} | damaged: {}'\
             .format(self.name, self.version, self.resolution, self.fps, self.has_gif, self.has_lossy, self.has_damaged)

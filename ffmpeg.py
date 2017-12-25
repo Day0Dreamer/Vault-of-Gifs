@@ -29,7 +29,7 @@ class FFmpeg(QObject):
                 self.run()
             else:
                 print(__name__, 'Warning: {} has no video file'.format(emoji.name_no_ext))
-                # todo убрать этот print
+                # todo заменить этот print
 
     def add(self, input_file, fps, delete_palette=True):
         """

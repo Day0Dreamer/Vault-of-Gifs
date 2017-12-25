@@ -1,8 +1,7 @@
 # encoding: utf-8
-import os
+import os  # todo убрать этот импорт
 
-import shutil
-
+from TasksPool import TasksPool
 from gifsicle import GifSicle
 from ffmpeg import FFmpeg
 from emoji import Emoji
@@ -11,14 +10,19 @@ from config import Config
 
 import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui
-from os import path
+from os import path, listdir, walk, remove, rmdir, makedirs
+from shutil import copy2
 from time import sleep
 import logging
+import winreg
 
 import act_reader
 from widgets import MainWindow_UI
 from widgets import settings
 from widgets import stylesheet
+
+
+
 
 # ################################# CONFIG ################################### #
 config = Config()
@@ -49,7 +53,48 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=warning_level)
 
 
 def files_in_folder(folder, ext):
-    return [os.path.join(os.path.abspath(folder), file) for file in os.listdir(folder) if '.'+str(ext) in file]
+    return [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]
+
+
+class PsFolder(object):
+    def __init__(self):
+        self.ps_paths = PsFolder.parse_versions(PsFolder.versions())
+
+    def __getitem__(self, index):
+        return self.ps_paths[index]
+
+    def __repr__(self):
+        return str(self.ps_paths)
+
+    @staticmethod
+    def versions() -> list:
+        installed_versions = []
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Adobe\Photoshop') as hKey:
+            # Get the information about the key.
+            subkey_count, values_count, modtime = winreg.QueryInfoKey(hKey)
+            installed_versions_count = subkey_count
+            for version in range(installed_versions_count):
+                installed_versions.append(winreg.EnumKey(hKey, version))
+            return installed_versions
+
+    @staticmethod
+    def parse_versions(versions: list) -> list:
+        """
+
+        :type versions: list
+        """
+        ps_paths = []
+        for version in versions:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Adobe\Photoshop\{}'.format(version)) as hKey:
+                subkey_count, values_count, modtime = winreg.QueryInfoKey(hKey)
+                for value in range(values_count):
+                    if winreg.EnumValue(hKey, value)[0] == 'SettingsFilePath':
+                        adobe_ps_roaming_settings_dir = winreg.EnumValue(hKey, value)[1]
+                        adobe_ps_roaming = path.dirname(path.dirname(adobe_ps_roaming_settings_dir))
+                        adobe_ps_roaming_act = path.join(adobe_ps_roaming,'Optimized Colors')
+                        ps_paths.append(adobe_ps_roaming_act)
+                        break
+        return ps_paths
 
 
 class VideoListModel(QtCore.QAbstractListModel):
@@ -91,65 +136,67 @@ class VideoListModel(QtCore.QAbstractListModel):
         pass
 
 
-# todo запилить модель для списка Act
 class ActListModel(QtCore.QAbstractListModel):
 
-    def __init__(self):
+    def __init__(self, act_list):
         super(ActListModel, self).__init__()
+        self.act_list = act_list
 
     def rowCount(self, parent):
-        return len(self.emoji_dict)
+        return len(self.act_list)
 
     def data(self, index, role):
         # For each parse through get the emoji using the index int
-        emoji = self.emoji_dict[self.emoji_list[index.row()]]
+        act_file = self.act_list[index.row()]
         # Use first UserRole as a handle to the Emoji object
         if role == 32:
-            return emoji
+            return act_file
         # Setup the text we see in the list
         if role == QtCore.Qt.DisplayRole:
-            return str(emoji.name)
+            return path.splitext(path.split(act_file)[-1])[0]
         # Setup the icon we see in the list
         if role == QtCore.Qt.DecorationRole:
-            icon_path = path.join(path.curdir, icons_folder_name, "{}_{}.png".format(emoji.resolution, emoji.fps))
+            icon_path = r"icons\ps.png"
             if path.exists(icon_path):
                 icon = QtGui.QIcon(icon_path)
             else:
-                icon = QtGui.QPixmap(32, 32)
+                icon = QtGui.QPixmap(16, 16)
             return icon
         # Setup the tooltip
         if role == QtCore.Qt.ToolTipRole:
-            return emoji.full_info().replace(' | ', '\n')
-        if role == QtCore.Qt.BackgroundRole:
-            if emoji.has_gif:
-                return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
+            return act_file
+            # return emoji.full_info().replace(' | ', '\n')
+        # if role == QtCore.Qt.BackgroundRole:
+        #     if emoji.has_gif:
+        #         return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
 
     def update(self):
         pass
 
 
 def make_folder_structure():
-    os.makedirs('temp', exist_ok=True)
-    os.makedirs('bin', exist_ok=True)
-    os.makedirs('input', exist_ok=True)
-    os.makedirs('act', exist_ok=True)
+    makedirs('temp', exist_ok=True)
+    makedirs('bin', exist_ok=True)
+    makedirs('input', exist_ok=True)
+    makedirs('act', exist_ok=True)
 make_folder_structure()
 
 
 def clean_folder(folder: str):
-    for root, dirs, files in os.walk(folder, topdown=False):
+    for root, dirs, files in walk(folder, topdown=False):
         for name in files:
             try:
-                os.remove(os.path.join(root, name))
+                remove(path.join(root, name))
             except Exception as e:
                 return e
         sleep(.01)
         for name in dirs:
-            os.rmdir(os.path.join(root, name))
+            rmdir(path.join(root, name))
 
 
 class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
-
+    # todo прикрутить ПКМ меню в списке видосов
+    # todo сделать сортировку в меню списка видосов
     def __init__(self):
         super(QtMainWindow, self).__init__()
         self.setupUi(self)
@@ -161,13 +208,13 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.gifsicle = None
         self.movie136 = QtGui.QMovie()
         self.movie280 = QtGui.QMovie()
-        self.source = None
         self.working_emoji = None
         self.lossy_file_size = None
         self.lossy_factor = None
         self.output_file = None
         self.original_280_gif = None
         self.original_136_gif = None
+        self.tp = None
         # todo разобраться с self.launcher self.launcher = Launcher()
         # todo разобраться с self.main_task_pool self.main_task_pool = TasksPool()
 
@@ -176,10 +223,6 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         # Max size of icons in video list
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
-
-        # Add acts from folder to list widget
-        # todo заменить добавление act в модель листа
-        self.dropdown_colortable.addItems(files_in_folder(self.working_directory, 'act'))
 
         # Update the video list on initial program start
         self.update_video_list()
@@ -202,12 +245,12 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.actionDelete_temp_files.triggered.connect
         def clear_temp_folder():
-            if len(os.listdir('temp')) != 0:
+            if len(listdir('temp')) != 0:
                 cleaning_result = clean_folder('temp')
                 if cleaning_result:
                     self.console_add(cleaning_result)
                 sleep(.1)
-                if len(os.listdir('temp')) == 0:
+                if len(listdir('temp')) == 0:
                     self.statusbar.showMessage('Temp folder is cleaned')
                 else:
                     self.statusbar.showMessage('Trying to clean temp folder, but failed')
@@ -235,7 +278,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         def clean_gifs():
             self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             for i in files_in_folder(self.working_directory, 'gif'):
-                os.remove(i)
+                remove(i)
                 self.update_video_list()
 
         # Button for unloading running gifs in the viewports
@@ -247,6 +290,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         def unload_gifs():
             self.movie136.setFileName('')
             self.movie280.setFileName('')
+
+        self.actionmov2mp4.triggered.connect(self.convert_mov_to_mp4)
 
         # About menu
         @self.actionAbout.triggered.connect
@@ -284,11 +329,32 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             else:
                 self.load_gif(self.working_emoji.gif_path)
 
-        # todo здесь изменить обработку act листа
+        # Add acts from folder to list widget
+        self.actlist_model = ActListModel(files_in_folder(self.working_directory, 'act'))
+        self.dropdown_colortable.setModel(self.actlist_model)
+
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
-            # self.load_act(files_in_folder(self.working_directory, 'act')[index_of_selected_item])
-            self.load_act(files_in_folder(act_folder, 'act')[index_of_selected_item])
+            act_file_path = self.dropdown_colortable.itemData(index_of_selected_item, 32)
+            self.load_act(act_file_path)
+
+        @self.btn_import_act.clicked.connect
+        def import_act_clicked():
+            photoshop_paths = PsFolder().ps_paths
+            print(photoshop_paths[0])
+            if len(photoshop_paths) > 1:
+                logging.warning('Multiple Photoshop paths found, using {}'.format(photoshop_paths[0]))
+            files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
+                                                              "Choose your color table",
+                                                              '{}'.format(photoshop_paths[0]),
+                                                              "All Files (*.*);;A color table (*.act)",
+                                                              "A color table (*.act)"
+                                                              )
+            print(files, filtr)
+            for file in files:
+                if path.exists(path.join(self.working_directory, file)):
+                    raise ZeroDivisionError
+                copy2(file, self.working_directory)
 
         @self.btn_export.clicked.connect
         def btn_export_clicked():
@@ -296,10 +362,13 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             lossy_dict = {'136': self.spin_quality136.text(), '280': self.spin_quality280.text()}
             # Start export conversion using dir user selected and lossy dict
             self.conversion = Conversion(self.working_directory, lossy_dict)
+            # todo сделать обработку экспорта пустой папки
 
         @self.btn_collect.clicked.connect
         def collect():
             self.console_add('Collecting process has started')
+            self.statusbar.showMessage('Collecting process has started')
+            # todo сделать коллект проекта с загрузкой
 
         # ############################## MIDDLE COLUMN ############################### #
 
@@ -333,7 +402,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.slider_speed280.valueChanged.connect
         def speed280_slider_changed(value):
-            self.statusbar.showMessage('Speed of 280px changed to ' + str(value / 100) + 'x')
+            self.statusbar.showMessage('Speed of 280px changed to {}x'.format(value/100))
             self.spin_speed280.blockSignals(True)
             self.spin_speed280.setValue(value * 0.01)
             self.spin_speed280.blockSignals(False)
@@ -341,50 +410,27 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.spin_speed280.valueChanged.connect
         def speed280_spinner_changed(value):
-            # value = round(value, 2)
-            self.statusbar.showMessage('Speed of 280px changed to ' + str(value) + 'x')
+            value = round(value, 2)
+            self.statusbar.showMessage('Speed of 280px changed to {}x'.format(value))
             value *= 100
             self.slider_speed280.setValue(value)
             self.movie280.setSpeed(value)
 
         @self.spin_scale280.valueChanged.connect
         def spin_scale280_value_changed(value):
-            self.statusbar.showMessage('Zoom of 280px changed to ' + str(value) + 'x')
+            self.statusbar.showMessage('Zoom of 280px changed to {}x'.format(value))
             self.gifplayer280.setScaledContents(True)
             self.gifplayer280.setFixedHeight(280 * value)
             self.gifplayer280.setFixedWidth(280 * value)
             self.slider_scale280.setValue(value)
-            minimal_window_size()
-
-        # @self.slider_quality280.sliderReleased.connect
-        # def slider_quality280_slider_released():
-        #     # self.spin_quality280.blockSignals(True)
-        #     self.spin_quality280.setValue(self.slider_quality280.value())
-        #     # self.spin_quality280.blockSignals(False)
-        #
-        # @self.slider_quality280.valueChanged.connect
-        # def slider_quality280_value_changed():
-        #     if self.check_livepreview280.isChecked():
-        #         pass
-        #     else:
-        #         self.spin_quality280.setValue(self.slider_quality280.value())
-        #         # self.spin_quality280.blockSignals(True)
-        #         # self.spin_quality280.blockSignals(False)
+            self.minimal_size()
 
         @self.spin_quality280.valueChanged.connect
         def spin_quality280_value_changed():
             if self.check_livepreview280.isChecked():
                 btn_update280_clicked()
 
-        @self.btn_update280.clicked.connect
-        def btn_update280_clicked_decorated():
-            btn_update280_clicked()
-
         def btn_update280_clicked():
-            self.source = 'btn_update280'
-            # selected_file = self.list_videoslist.selectedItems()[0].text().replace('avi', 'gif')
-            # selected_file = path.splitext(self.original_280_gif)[0] + '.gif'
-            selected_file = path.splitext(self.movie280.fileName())[0] + '.gif'
             working_file = self.movie280.fileName()
             output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie280.stop()
@@ -399,51 +445,16 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             color_table = self_act_as_txt
 
             # self.btn_update280.setEnabled(False)
-            # self.gifsicle = GifSicle()
-            # if self.check_endless_lossy280.isChecked():
-            #     self.gifsicle(
-            #         input_file=working_file,
-            #         lossy_factor=lossy_factor,
-            #         color_map=color_table,
-            #         output_file=output_file,
-            #         delay=3)
-            # else:
-                # self.gifsicle(
-                #     input_file=selected_file,
-                #     lossy_factor=lossy_factor,
-                #     color_map=color_table,
-                #     output_file=output_file,
-                #     delay=3)
-
-
             self.gc = GifSicle(self.working_emoji, lossy_factor, color_table)
             # self.gc = GifSicle() todo разобраться что происходит тут
             # self.gc.return_signal.connect(lambda x: print(x))
             # self.gc.add(self.working_emoji, lossy_factor, color_table)
             # self.gc.run()
-                # .return_signal.connect(self.console_add)
+            # .return_signal.connect(self.console_add)
 
             self.load_gif(output_file)
-            # COMMENTED AS OF GIFSICLE METHOD
-            # self.proc.waitForFinished()
-
-                # @self.worker.finish_signal.connect
-                # def load280_decorated():
-                #     print('Finish signal received:', time.time())
-                # load280(os.path.splitext(working_file)[0] + '.tmp')
-
-
-                # self.gifsicle(
-                #     input_file=selected_file,
-                #     lossy_factor=lossy_factor,
-                #     color_map=color_table,
-                #     output_file=output_file,
-                #     delay=3)
-                # size = str(round(os.path.getsize(output_file) / 1024, 2))
-                # self.statusbar.showMessage('280px: Lossy factor of {} results in {}Kb of size'.format(lossy_factor, size))
-
-                # load280(os.path.splitext(working_file)[0] + '.tmp')
-                # self.btn_update280.setEnabled(True)
+            # self.btn_update280.setEnabled(True)
+        self.btn_update280.clicked.connect(btn_update280_clicked)
 
         # ############################### RIGHT COLUMN ############################### #
 
@@ -481,7 +492,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.slider_speed136.valueChanged.connect
         def speed136_slider_changed(value):
-            self.statusbar.showMessage('Speed of 136px changed to ' + str(value / 100) + 'x')
+            self.statusbar.showMessage('Speed of 136px changed to {}x'.format(value/100))
             self.spin_speed136.blockSignals(True)
             self.spin_speed136.setValue(value * 0.01)
             self.spin_speed136.blockSignals(False)
@@ -489,52 +500,29 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.spin_speed136.valueChanged.connect
         def speed136_spinner_changed(value):
-            # value = round(value, 2)
-            self.statusbar.showMessage('Speed of 136px changed to ' + str(value) + 'x')
+            value = round(value, 2)
+            self.statusbar.showMessage('Speed of 136px changed to {}x'.format(value))
             value *= 100
             self.slider_speed136.setValue(value)
             self.movie136.setSpeed(value)
 
         @self.spin_scale136.valueChanged.connect
         def spin_scale136_value_changed(value):
-            self.statusbar.showMessage('Zoom of 136px changed to ' + str(value) + 'x')
+            self.statusbar.showMessage('Zoom of 136px changed to {}x'.format(value))
             self.gifplayer136.setScaledContents(True)
             self.gifplayer136.setFixedHeight(136 * value)
             self.gifplayer136.setFixedWidth(136 * value)
             self.slider_scale136.setValue(value)
-            minimal_window_size()
-
-        # @self.slider_quality136.sliderReleased.connect
-        # def slider_quality136_slider_released():
-        #     # self.spin_quality136.blockSignals(True)
-        #     self.spin_quality136.setValue(self.slider_quality136.value())
-        #     # self.spin_quality136.blockSignals(False)
-
-        # @self.slider_quality136.valueChanged.connect
-        # def slider_quality136_value_changed():
-        #     if self.check_livepreview136.isChecked():
-        #         pass
-        #     else:
-        #         self.spin_quality136.setValue(self.slider_quality136.value())
-        #         # self.spin_quality136.blockSignals(True)
-        #         # self.spin_quality136.blockSignals(False)
+            self.minimal_size()
 
         @self.spin_quality136.valueChanged.connect
         def spin_quality136_value_changed():
             if self.check_livepreview136.isChecked():
                 btn_update136_clicked()
 
-        @self.btn_update136.clicked.connect
-        def btn_update136_clicked_decorated():
-            btn_update136_clicked()
-
         def btn_update136_clicked():
-            self.source = 'btn_update136'
-            # selected_file = self.list_videoslist.selectedItems()[0].text().replace('avi', 'gif')
-            # selected_file = os.path.splitext(self.original_136_gif)[0] + '.gif'
-            selected_file = path.splitext(self.movie136.fileName())[0] + '.gif'
             working_file = self.movie136.fileName()
-            output_file = os.path.splitext(working_file)[0] + '.tmp'
+            output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie136.stop()
             lossy_factor = self.spin_quality136.text()
             # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
@@ -545,53 +533,24 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             with open(self_act_as_txt, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self_act_as_txt
-            # print(color_table)
-            # self.btn_update136.setEnabled(False)
-            # if self.check_endless_lossy136.isChecked():
-            #     self.gifsicle(
-            #         input_file=working_file,
-            #         lossy_factor=lossy_factor,
-            #         color_map=color_table,
-            #         output_file=output_file,
-            #         delay=3)
-            # else:
-            #     self.gifsicle(
-            #         input_file=selected_file,
-            #         lossy_factor=lossy_factor,
-            #         color_map=color_table,
-            #         output_file=output_file,
-            #         delay=3)
+
             GifSicle(self.working_emoji, lossy_factor, color_table)
             self.load_gif(output_file)
-
-        def minimal_window_size():
-            self.resize(1, 1)
+        self.btn_update136.clicked.connect(btn_update136_clicked)
 
     def update_video_list(self, folder=None, ext='avi'):
+        # If no folder specified, update the current working directory
         if not folder:
             folder = self.working_directory
         if len(files_in_folder(folder, ext)) > 0:
-            # emoji_dict = {print(Emoji(emoji)) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
+            # Make a dictionary out of emojis, when emoji object is not none (has been successfully created)
             emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
+            # Make a model
             self.videolist_model = VideoListModel(emoji_dict)
+            # Assign the model to the list view
             self.list_videoslist.setModel(self.videolist_model)
+            # Enable the collect button
             self.btn_collect.setEnabled(True)
-
-        # self.list_videoslist.clear()
-        # # Add objects pre-created list items to the list
-        # for i in files_in_folder(folder, ext):
-        #     emoji_object = Emoji(i)
-        #     # Get the video-list item out of the Emoji object
-        #     item = emoji_object.video_list_item
-        #     # Check if avi has gif counterpart
-        #     gif_full_path = os.path.splitext(item.data(ITEM_FULL_PATH))[0]+'.gif'
-        #     if os.path.exists(gif_full_path):
-        #         item.setBackground(QtGui.QColor(0, 255, 0, 32))
-        #         emoji_object.has_raw_gif = True
-        #     else:
-        #         item.setBackground(QtGui.QColor(255, 255, 255, 255))
-        #         emoji_object.has_raw_gif = False
-        #     self.list_videoslist.addItem(item)
 
     # ################################# LOADERS ################################## #
 
@@ -603,403 +562,77 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.plaintext_act_readout.setPlainText(''.join(act[0]))
         self.statusbar.showMessage(act[1])
 
-    def load_gif(self, gif_path):
+    def load_gif(self, gif_path: str) -> None:
+        """
+        This method chooses, and loads, in which viewport to load the gif, 280 or 136 one.
+
+        :type gif_path: str
+        :param gif_path: Full path to the gif, you want to load.
+        """
         if '280' in gif_path:
             self.load280(gif_path)
         elif '136' in gif_path:
             self.load136(gif_path)
         else:
-            print('load_gif function encountered a weird gif_path')
+            logging.error('load_gif function encountered a weird gif_path: {}'.format(gif_path))
 
     def load280(self, file280):
-        self.btn_playpause280.setChecked(False)
-        self.btn_fb280.setEnabled(True)
-        self.btn_playpause280.setEnabled(True)
-        self.btn_ff280.setEnabled(True)
-        self.layout_gif280.setTitle(os.path.split(file280)[1])
+        self.btn_playpause280.setChecked(False)  # Unpress the play-pause button
+        self.btn_fb280.setEnabled(True)          # Enable back button
+        self.btn_playpause280.setEnabled(True)   # Enable play-pause button
+        self.btn_ff280.setEnabled(True)          # Enable forward button
+        self.layout_gif280.setTitle(path.split(file280)[1])  # Set name of the gif as the title
         self.movie280.setFileName('')  # Free (close) the previous loaded image
-        self.movie280 = QtGui.QMovie(file280)
-        self.gifplayer280.setMovie(self.movie280)
-        self.movie280.setSpeed(self.spin_speed280.value()*100)
+        self.movie280 = QtGui.QMovie(file280)  # Create a QMovie instance
+        self.gifplayer280.setMovie(self.movie280)  # And assign it to the player widget
+        self.movie280.setSpeed(self.spin_speed280.value()*100)  # Automatically set speed using the speed spinner
         self.movie280.start()
         return self.movie280.isValid()
 
     def load136(self, file136):
-        self.btn_playpause136.setChecked(False)
-        self.btn_fb136.setEnabled(True)
-        self.btn_playpause136.setEnabled(True)
-        self.btn_ff136.setEnabled(True)
-        self.layout_gif136.setTitle(os.path.split(file136)[1])
+        self.btn_playpause136.setChecked(False)  # Unpress the play-pause button
+        self.btn_fb136.setEnabled(True)          # Enable back button
+        self.btn_playpause136.setEnabled(True)   # Enable play-pause button
+        self.btn_ff136.setEnabled(True)          # Enable forward button
+        self.layout_gif136.setTitle(path.split(file136)[1])  # Set name of the gif as the title
         self.movie136.setFileName('')  # Free (close) the previous loaded image
-        self.movie136 = QtGui.QMovie(file136)
-        self.gifplayer136.setMovie(self.movie136)
-        self.movie136.setSpeed(self.spin_speed136.value()*100)
+        self.movie136 = QtGui.QMovie(file136)  # Create a QMovie instance
+        self.gifplayer136.setMovie(self.movie136)  # And assign it to the player widget
+        self.movie136.setSpeed(self.spin_speed136.value()*100)  # Automatically set speed using the speed spinner
         self.movie136.start()
         return self.movie136.isValid()
 
-    def load_palette(self, palette):
+    def load_palette(self, palette: str) -> None:
+        """
+        This method chooses loads a palette image to 136 viewport.
+
+        :type palette: str
+        :param palette: Full path to the image, you want to load.
+        """
         pixmap = QtGui.QPixmap(palette)
-        pixmap = pixmap.scaled(136,136,mode=QtCore.Qt.FastTransformation)
+        pixmap = pixmap.scaled(136, 136, mode=QtCore.Qt.FastTransformation)
         self.gifplayer136.setPixmap(pixmap)
-        # self.gifplayer136.scaled
-        # self.gifplayer136.setScaledContents(True)
+        # self.gifplayer136.scaled todo
+        # self.gifplayer136.setScaledContents(True) todo
 
     def console_add(self, log_input):
-        self.console.append(str(log_input))
-        # self.console.append(str(log_input).rstrip())
-
-    # ########################### Not Used Functions ############################ #
+        self.console.append(str(log_input))#.rstrip())
 
     def convert_mov_to_mp4(self):
         print(QtGui.QFileDialog())
         files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
-                                                          "QFileDialog.getOpenFileNames()", '.',
-                                                          "All Files (*);;MOV (*.mov)", "MOV (*.mov)")
+                                                          "Choose your files for conversion", '.',
+                                                          "All Files (*.*);;MOV (*.mov)", "MOV (*.mov)")
         print(files, filtr)
         for input_file in files:
-            self.launch_process('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
-                                '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
+            self.tp = TasksPool()
+            self.tp.return_signal.connect(self.console_add)
+            self.tp.add_task('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
+                             '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
+            self.tp.launch_list()
 
     def minimal_size(self):
         self.resize(0, 0)
-
-    # def launch_process(self, command, source=None, working_file=''):
-    #     self.console_add('='*50+'\n' + 'Launched ' + command)
-    #     # print('Launched', command)
-    #     self.slider_quality136.setEnabled(False)
-    #     self.slider_quality280.setEnabled(False)
-    #     self.spin_quality136.setEnabled(False)
-    #     self.spin_quality280.setEnabled(False)
-    #     self.btn_update136.setEnabled(False)
-    #     self.btn_update280.setEnabled(False)
-    #     self.proc = QtCore.QProcess()
-    #     self.proc.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-    #     # self.proc.waitForFinished()
-    #
-    #     @self.proc.finished.connect
-    #     def finished():
-    #         self.slider_quality136.setEnabled(True)
-    #         self.slider_quality280.setEnabled(True)
-    #         self.spin_quality136.setEnabled(True)
-    #         self.spin_quality280.setEnabled(True)
-    #         self.btn_update136.setEnabled(True)
-    #         self.btn_update280.setEnabled(True)
-    #         recognize_source()
-    #         time2 = time.time()
-    #         timer = 'Last subroutine took {} msec'.format(str(round(((time2-time1)*1000), 2)))
-    #         self.console_add(timer)
-    #         if flag_show_message_bar_timer:
-    #             self.statusbar.showMessage(timer)
-    #         self.console_add('Finished ' + command + '\n'+'='*50)
-    #         # print('Finished ' + command)
-    #
-    #     @self.proc.readyRead.connect
-    #     def read_out():
-    #         out = self.proc.readAll()
-    #         self.console.append(str(out))
-    #         print('|', str(out), sep='', end='')
-    #
-    #     def recognize_source():
-    #         print(source)
-    #         if source == 'btn_update280':
-    #             self.load280(os.path.splitext(self.movie280.fileName())[0] + '.tmp')
-    #             size = str(round(os.path.getsize(self.movie280.fileName()) / 1024, 2))
-    #             message = '280px: Lossy factor of {} results in {}Kb of size'.format(self.spin_quality280.text(), size)
-    #             self.statusbar.showMessage(message)
-    #             self.console_add(message)
-    #         if source == 'btn_update136':
-    #             self.load136(os.path.splitext(self.movie136.fileName())[0] + '.tmp')
-    #             size = str(round(os.path.getsize(self.movie136.fileName()) / 1024, 2))
-    #             message = '136px: Lossy factor of {} results in {}Kb of size'.format(self.spin_quality136.text(), size)
-    #             self.statusbar.showMessage(message)
-    #             self.console_add(message)
-    #         if source == 'ffmpeg280':
-    #             self.load280(os.path.splitext(working_file)[0] + '.gif')
-    #             self.original_280_gif = os.path.splitext(working_file)[0] + '.gif'
-    #             self.update_video_list(self.working_directory)
-    #         if source == 'ffmpeg136':
-    #             self.load136(os.path.splitext(working_file)[0] + '.gif')
-    #             self.original_136_gif = os.path.splitext(working_file)[0] + '.gif'
-    #             self.update_video_list(self.working_directory)
-    #
-    #     time1 = time.time()
-    #     self.proc.start(command)
-    #     # self.proc.startDetached(command)
-    #     # self.proc.start('ffmpeg.exe')
-    #     # self.proc.start('gifsicle.exe --help')
-    #     # self.proc.start('ping.exe')
-    #     # self.proc.waitForFinished()
-    #
-    # def selector(self):
-    #     print('Selector has been called')
-    #     if self.source == 'btn_update280':
-    #         self.load280(os.path.splitext(self.movie280.fileName())[0] + '.tmp')
-    #         size = str(round(os.path.getsize(self.movie280.fileName()) / 1024, 2))
-    #         message = '280px: Lossy factor of {} results in {}Kb of size'.format(self.spin_quality280.text(), size)
-    #         self.statusbar.showMessage(message)
-    #         self.console_add(message)
-    #     elif self.source == 'btn_update136':
-    #         self.load136(os.path.splitext(self.movie136.fileName())[0] + '.tmp')
-    #         size = str(round(os.path.getsize(self.movie136.fileName()) / 1024, 2))
-    #         message = '136px: Lossy factor of {} results in {}Kb of size'.format(self.spin_quality136.text(), size)
-    #         self.statusbar.showMessage(message)
-    #         self.console_add(message)
-    #     elif self.source == 'ffmpeg280':
-    #         if self.isVisible():
-    #             self.load280(os.path.splitext(self.working_file)[0] + '.gif')
-    #             self.original_280_gif = os.path.splitext(self.working_file)[0] + '.gif'
-    #             self.update_video_list(self.working_directory)
-    #     elif self.source == 'ffmpeg136':
-    #         if self.isVisible():
-    #             self.load136(os.path.splitext(self.working_file)[0] + '.gif')
-    #             self.original_136_gif = os.path.splitext(self.working_file)[0] + '.gif'
-    #             self.update_video_list(self.working_directory)
-    #     elif self.source == 'export_stage1':
-    #         if os.path.exists(self.output_file):
-    #             self.console_add(self.output_file + ' exists')
-    #         else:
-    #             self.console_add(self.output_file + ' doesnt exist')
-    #
-    #         # Uncompressed gif to damaged gif
-    #         # if emoji.resolution == '280x280':
-    #         try:
-    #             self.lossy_file_size = os.path.getsize(self.output_file)
-    #         except FileNotFoundError:
-    #             self.lossy_file_size = True
-    #         # Get the size of the lossy (not damaged) file
-    #         # If lossy is over 500kb start export stage 2
-    #         while self.lossy_file_size > 500*1024:
-    #             try:
-    #                 self.lossy_file_size = os.path.getsize(self.output_file)
-    #             except FileNotFoundError:
-    #                 self.lossy_file_size = True
-    #             self.export_stage2_signal.emit()
-    #     elif self.source == 'export_stage2':
-    #         print('export_stage2_end_signal_received')
-    #
-    #
-    #     self.source = None
-    #
-    # def gifsicle_old(self, delay, lossy_factor, color_map, input_file, source=None, output_file=None):
-    #     """Converts string a gif to a lossy gif
-    #     input_file is a full path
-    #     Returns output_file, which by default is equal to input_file"""
-    #     if output_file is None:
-    #         output_file = input_file
-    #     cmd = 'bin\\gifsicle.exe -O3 --no-comments --no-names --no-extensions --lossy={} --use-colormap "{}" {} -o {}' \
-    #         .format(lossy_factor, color_map, input_file, output_file)
-    #     self.launch_process(cmd, source)
-    #     return output_file
-    #
-    # def gifsicle(self, fps, lossy_factor, color_map, input_file, output_file=None):
-    #     if output_file is None:
-    #         output_file = input_file
-    #
-    #     delay = fps_delays[''.join((digit for digit in fps if digit.isdigit()))]
-    #     cmd = r'bin\gifsicle.exe -O3 --no-comments --no-names --no-extensions -d{} --lossy={} ' \
-    #           '--use-colormap "{}" {} -o {}'.format(delay, lossy_factor, color_map, input_file, output_file)
-    #     self.main_task_pool.add_task(cmd)
-    #
-    #     return output_file
-    #
-    # def ffmpeg_old(self, input_file, fps=30):
-    #     """Converts any video file to a gif
-    #     input_file is a full path
-    #     Returns input_file with .gif extension"""
-    #     # if flag_convert_30_to_29dot97 and fps == 30:
-    #     #     fps = 29.97
-    #     cmd = 'bin\\video2gif.bat {} -y -f {}'.format(input_file, fps)
-    #     if '280' in input_file:
-    #         self.source = 'ffmpeg280'
-    #     elif '136' in input_file:
-    #         self.source = 'ffmpeg136'
-    #     self.main_task_pool.add_task(cmd)
-    #
-    #     return os.path.splitext(input_file)[0] + '.gif'
-    #
-    # def export_folder(self, folder='input', ext='avi', lossy280=200, lossy136=200, color_map=r"C:\Python\Vault_Of_Gifs\act\perc.act"):
-    #     emojis = []
-    #     for i in files_in_folder(folder, ext):
-    #         emoji_object = Emoji(i)
-    #         emojis.append(emoji_object)
-    #
-    #     # Generate missing gifs
-    #     for emoji_object in emojis:
-    #         # Check if avi has gif counterpart
-    #         gif_full_path = os.path.splitext(emoji_object.full_path)[0]+'.gif'
-    #         # Make a gif if none exists
-    #         if not os.path.exists(gif_full_path):
-    #             self.ffmpeg(emoji_object.full_path)
-    #
-    #     # Save lossy factor from input to object's variable
-    #     self.lossy_factor280 = lossy280
-    #     self.lossy_factor136 = lossy136
-    #     # If colormap is act, then convert it to txt
-    #     if color_map[-3:] == 'act':
-    #         color_map = act_reader.create_gifsicle_colormap(color_map)
-    #     # Generate lossy versions
-    #     for emoji in emojis:
-    #         raw_gif = os.path.splitext(emoji.full_path)[0]+'.gif'
-    #         output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS-lossy.gif'
-    #                                    .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-    #         if '280' in emoji.resolution:
-    #             self.lossy_factor = self.lossy_factor280
-    #         elif '136' in emoji.resolution:
-    #             self.lossy_factor = self.lossy_factor136
-    #         self.gifsicle(fps=emoji.fps,
-    #                       lossy_factor=self.lossy_factor,
-    #                       color_map=color_map,
-    #                       input_file=raw_gif,
-    #                       output_file=output_file)
-    #
-    #     # Generate damaged versions
-    #     for emoji in emojis:
-    #         raw_gif = os.path.splitext(emoji.full_path)[0]+'-lossy.gif'
-    #         output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS-lossy-damaged.gif'
-    #                                    .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-    #         # If lossy gif is over 500Kb then:
-    #         while not os.path.exists(raw_gif):
-    #             time.sleep(.5)
-    #         size = path.getsize(raw_gif)
-    #
-    #         if size > damaged_filesize*1024:
-    #             print('lossy file is over {}kb'.format(damaged_filesize))
-    #             copy2(raw_gif, output_file)
-    #             # Add current file to the file watcher
-    #             self.file_watch.addPath(output_file)
-    #             def damaged_is_changed(output_file):
-    #                 actual_damaged_filesize = path.getsize(output_file)
-    #                 if actual_damaged_filesize/1024 > damaged_filesize:
-    #                     size_difference = actual_damaged_filesize/1024-damaged_filesize
-    #                     print(size_difference)
-    #                     if size_difference > 50:
-    #                         self.lossy_factor += 50
-    #                     elif size_difference > 25:
-    #                         self.lossy_factor += 10
-    #                     elif size_difference > 10:
-    #                         self.lossy_factor += 5
-    #                     elif size_difference <= 10:
-    #                         self.lossy_factor += 1
-    #                     self.gifsicle(fps=emoji.fps,
-    #                                   lossy_factor=self.lossy_factor,
-    #                                   color_map=color_map,
-    #                                   input_file=raw_gif,
-    #                                   output_file=output_file)
-    #
-    #
-    #                 else:
-    #                     print('damaged file is now {}kb'.format(actual_damaged_filesize/1024))
-    #                     self.file_watch.removePath(output_file)
-    #
-    #             self.file_watch.fileChanged.connect(damaged_is_changed)
-    #             damaged_is_changed(output_file)
-    #
-    #         else:
-    #             print('lossy file is under {}kb'.format(damaged_filesize))
-    #
-    # def export(self, emoji):
-    #     self.btn_export.setText('Exporting')
-    #     self.console_add('Exporting: {}'.format(emoji.name))
-    #
-    #     # Avi to uncompressed gif
-    #     if not emoji.has_raw_gif:
-    #         raw_gif = self.ffmpeg(emoji.full_path, emoji.fps)
-    #         print('Launching ffmpeg')
-    #     else:
-    #         raw_gif = os.path.splitext(emoji.full_path)[0]+'.gif'
-    #         print('No ffmpeg needed')
-    #
-    #     # Uncompressed gif to lossy gif
-    #     if emoji.resolution == '280x280':
-    #         lossy_factor = self.spin_quality280.value()
-    #     elif emoji.resolution == '136x136':
-    #         lossy_factor = self.spin_quality136.value()
-    #
-    #     color_map = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-    #     output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS-lossy.gif'
-    #                                .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-    #     self.console_add('output file = ' + output_file)
-    #
-    #     self.output_file = output_file
-    #     self.lossy_factor = lossy_factor
-    #     self.source = "export_stage1"
-    #
-    #     self.gifsicle(fps=emoji.fps,
-    #                   lossy_factor=lossy_factor,
-    #                   color_map=color_map,
-    #                   input_file=raw_gif,
-    #                   output_file=output_file)
-    #
-    #     # self.proc.waitForFinished()
-    #     # self.task_x.add_task(cmd)
-    #
-    # @QtCore.Slot()
-    # def export_stage2(self):
-    #     self.source = 'export_stage2'
-    #     emoji = self.working_emoji
-    #     self.output_file = os.path.join(emoji.path, '{}-{}-{}-{}FPS-lossy-damaged.gif'
-    #                                     .format(emoji.name, emoji.version, emoji.resolution, emoji.fps))
-    #
-    #     self.lossy_factor += 1
-    #
-    #     self.console_add('***\nTrying to write '+ self.output_file + '\n lossy factor is ' + str(self.lossy_factor))
-    #     self.console_add('Trying lossy factor of {}'.format(self.lossy_factor))
-    #     color_map = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-    #     raw_gif = os.path.splitext(emoji.full_path)[0]+'.gif'
-    #
-    #     self.gifsicle(fps=emoji.fps,
-    #                   lossy_factor=self.lossy_factor,
-    #                   color_map=color_map,
-    #                   input_file=raw_gif,
-    #                   output_file=self.output_file)
-    #     print('export_stage2 ended')
-
-
-# class Emoji(object):
-#     def __init__(self, filename):
-#         self.name = self.version = self.resolution = self.fps = self.lossy = self.damaged = self.has_raw_gif = False
-#         self.full_path = filename
-#         # [Наименование-анимации]-[02]-[280х280]-[30FPS]-[LOSSY]-[DAMAGED].[ext]
-#         self.path, self.name = os.path.split(filename)
-#         self.ext = os.path.splitext(self.name)[1]
-#         self.name = os.path.splitext(self.name)[0]
-#         self.split_properties = self.name.split('-')
-#         if len(self.split_properties) >= 4:
-#             self.name, self.version, self.resolution, self.fps = self.split_properties[:4]
-#             self.fps = self.fps.upper().rstrip('FPS')
-#             if 'LOSSY' in (tag.upper() for tag in self.split_properties[4:]):
-#                 self.lossy = True
-#             if 'DAMAGED' in (tag.upper() for tag in self.split_properties[4:]):
-#                 self.damaged = True
-#
-#             self.video_list_item = QtGui.QListWidgetItem()
-#             self.video_list_item.setText(self.name + ' | ' + self.version)
-#
-#             if self.lossy: lossy_icon = '_L'
-#             else: lossy_icon = ''
-#             if self.damaged: damaged_icon = '_D'
-#             else: damaged_icon = ''
-#             self.video_list_item.setIcon(QtGui.QIcon("icons\\{}_{}{}{}.png".
-#                                                      format(self.resolution, self.fps, lossy_icon, damaged_icon)))
-#
-#             self.video_list_item.setToolTip\
-#                 ('Name: {} \nversion: {} \nresolution: {} \nfps: {} \nlossy: {} \ndamaged: {}'
-#                  .format(self.name, self.version, self.resolution, self.fps, self.lossy, self.damaged))
-#
-#             self.video_list_item.setData(ITEM_EMOJI_OBJECT, self)
-#             self.video_list_item.setData(ITEM_NAME        , self.name)
-#             self.video_list_item.setData(ITEM_VERSION     , self.version)
-#             self.video_list_item.setData(ITEM_RESOLUTION  , self.resolution)
-#             self.video_list_item.setData(ITEM_FPS         , self.fps)
-#             self.video_list_item.setData(ITEM_LOSSY       , self.lossy)
-#             self.video_list_item.setData(ITEM_DAMAGED     , self.damaged)
-#             self.video_list_item.setData(ITEM_FULL_PATH   , self.full_path)
-#         else:
-#             raise ValueError('Wrong File detected: ' + self.full_path)
-#
-#     def get_info(self):
-#         return 'Name: {} \nversion: {} \nresolution: {} \nfps: {} \nlossy: {} \ndamaged: {}' \
-#             .format(self.name, self.version, self.resolution, self.fps, self.lossy, self.damaged)
 
 
 if __name__ == '__main__':

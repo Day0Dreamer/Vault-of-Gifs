@@ -21,9 +21,6 @@ from widgets import MainWindow_UI
 from widgets import settings
 from widgets import stylesheet
 
-
-
-
 # ################################# CONFIG ################################### #
 config = Config()
 fps_delays = config()['fps_delays']
@@ -132,8 +129,11 @@ class VideoListModel(QtCore.QAbstractListModel):
             if emoji.has_gif:
                 return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
 
-    def update(self):
+    def update(self, folder):
         pass
+        self.rowsAboutToBeInserted.emit(self,0,0)
+        self.act_list = files_in_folder(folder, 'act')
+        self.rowsInserted.emit(self,0,0)
 
 
 class ActListModel(QtCore.QAbstractListModel):
@@ -170,8 +170,10 @@ class ActListModel(QtCore.QAbstractListModel):
         #     if emoji.has_gif:
         #         return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
 
-    def update(self):
-        pass
+    def update(self, folder):
+        self.rowsAboutToBeInserted.emit(self,0,0)
+        self.act_list = files_in_folder(folder, 'act')
+        self.rowsInserted.emit(self,0,0)
 
 
 def make_folder_structure():
@@ -225,7 +227,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
 
         # Update the video list on initial program start
-        self.update_video_list()
+        self.make_video_list()
 
         # ################################# TOP BAR ################################## #
         # File menu
@@ -279,7 +281,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             for i in files_in_folder(self.working_directory, 'gif'):
                 remove(i)
-                self.update_video_list()
+            self.update_video_list()
 
         # Button for unloading running gifs in the viewports
         self.actionUnloadGifs = QtGui.QAction(self)
@@ -350,11 +352,30 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                                                               "All Files (*.*);;A color table (*.act)",
                                                               "A color table (*.act)"
                                                               )
-            print(files, filtr)
+
+            def copy_act(act_file):  # Compact repeating function
+                copy2(act_file, path.join(self.working_directory, path.basename(act_file)))
+
+            user_choice = None
             for file in files:
-                if path.exists(path.join(self.working_directory, file)):
-                    raise ZeroDivisionError
-                copy2(file, self.working_directory)
+                # If there is a file existing and if user has NOT clicked YesToAll ask him
+                if path.exists(path.join(path.abspath(self.working_directory), path.basename(file))) and user_choice != QtGui.QMessageBox.YesToAll:
+                    error_box = QtGui.QMessageBox()
+                    error_box.setStyleSheet(self.styleSheet())
+                    error_box.setWindowTitle('File error')
+                    error_box.setText('The file {} exists in {}'.format(path.basename(file),
+                                                                        path.abspath(self.working_directory)))
+                    error_box.setInformativeText('Do you want to overwrite it?')
+                    error_box.setStandardButtons(QtGui.QMessageBox.YesToAll | QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                    error_box.setDefaultButton(QtGui.QMessageBox.No)
+                    user_choice = error_box.exec_()
+                    if user_choice == QtGui.QMessageBox.Yes or user_choice == QtGui.QMessageBox.YesToAll:
+                        copy_act(file)
+                else:
+                    copy_act(file)
+            self.actlist_model.update(self.working_directory)
+
+                    # todo update the act file model
 
         @self.btn_export.clicked.connect
         def btn_export_clicked():
@@ -537,6 +558,20 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             GifSicle(self.working_emoji, lossy_factor, color_table)
             self.load_gif(output_file)
         self.btn_update136.clicked.connect(btn_update136_clicked)
+
+    def make_video_list(self, folder=None, ext='avi'):
+        # If no folder specified, update the current working directory
+        if not folder:
+            folder = self.working_directory
+        if len(files_in_folder(folder, ext)) > 0:
+            # Make a dictionary out of emojis, when emoji object is not none (has been successfully created)
+            emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
+            # Make a model
+            self.videolist_model = VideoListModel(emoji_dict)
+            # Assign the model to the list view
+            self.list_videoslist.setModel(self.videolist_model)
+            # Enable the collect button
+            self.btn_collect.setEnabled(True)
 
     def update_video_list(self, folder=None, ext='avi'):
         # If no folder specified, update the current working directory

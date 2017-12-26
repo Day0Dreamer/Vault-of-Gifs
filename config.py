@@ -1,10 +1,24 @@
 import json
 from os.path import exists
+from os import remove
+from sys import exit
+
+config_filename = 'config.json'
+
+
+class ConfigDict(dict):
+    def __init__(self):
+        super(ConfigDict, self).__init__()
+
+    def __missing__(self, key):
+        print('whoops, bad config.')
+        remove(config_filename)
+        exit(1)
 
 
 class Config(object):
     def __init__(self):
-        self.config = {}
+        self.config = ConfigDict()
         self.default = {
             'flag_show_message_bar_timer': False,
             'act_folder': './act',
@@ -115,7 +129,7 @@ class Config(object):
             'console_enabled': False,
             'name_delimiter': '_'
         }
-        self.config_filename = 'config.json'
+        self.config_filename = config_filename
 
         # No config file check
         if not exists(self.config_filename):
@@ -126,11 +140,11 @@ class Config(object):
             self.load()
 
     def load_default(self):
-        self.config = self.default
+        self.config.update(self.default)
 
     def load(self):
         try:
-            self.config = json.load(open(self.config_filename))
+            self.config.update(json.load(open(self.config_filename)))
             print('Config is loaded from disk')
         except FileNotFoundError:
             print(self.config_filename, 'is not found.')

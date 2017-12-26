@@ -27,12 +27,12 @@ fps_delays = config()['fps_delays']
 flag_show_message_bar_timer = config()['flag_show_message_bar_timer']
 act_folder = config()['act_folder']
 damaged_filesize = int(config()['damaged_filesize'])
-warning_level = config()['warning_level']
+logging_level = config()['logging_level']
 console_flag = config()['console_enabled']
 icons_folder_name = 'icons'
 
 # ################################ LOGGING ################################### #
-logging.basicConfig(format='%(levelname)s:%(message)s', level=warning_level)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging_level)
 # todo сделать так, чтобы логгер писал имя файла откуда лог
 
 # ############################### END CONFIG ################################# #

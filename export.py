@@ -26,8 +26,10 @@ class Conversion(QObject):
         if not color_map:
             try:
                 self.color_map = self.files_in_folder(self.project_folder, 'act')[0]
-            except(IndexError):
+            except IndexError:
                 print('Please put one color_palette.act in the folder')
+        else:
+            self.color_map = color_map
 
         self.loop = QEventLoop()
         self.conversion1_done.connect(self.loop.quit)
@@ -61,6 +63,8 @@ class Conversion(QObject):
                 elif '280' in emoji_dict[item].resolution:
                     lossy_factor = self.lossy_factor['280']
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_lossy=True)
+            else:
+                print('Lossy file for {} already exists, skipping lossy creation'.format(emoji_dict[item].name))
         QTimer.singleShot(0, self.conversion2_done)
 
     def gifs2damaged(self):

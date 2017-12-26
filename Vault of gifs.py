@@ -381,8 +381,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         def btn_export_clicked():
             # Dictionary two lossy values from their interface spinners
             lossy_dict = {'136': self.spin_quality136.text(), '280': self.spin_quality280.text()}
+            color_map = self.dropdown_colortable.itemData(self.dropdown_colortable.currentIndex(), 32)
             # Start export conversion using dir user selected and lossy dict
-            self.conversion = Conversion(self.working_directory, lossy_dict)
+            self.conversion = Conversion(self.working_directory, lossy_dict, color_map)
             # todo сделать обработку экспорта пустой папки
 
         @self.btn_collect.clicked.connect

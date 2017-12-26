@@ -154,6 +154,7 @@ class GifSicle(QObject):
         cmd = r'bin\gifsicle.exe -O3 --no-comments --no-names --no-extensions -d{} --lossy={} ' \
               r'--use-colormap "{}" {} -o {}'.format(delay, lossy_factor, color_map, input_file, output_file)
 
+        print(cmd)
         self.tp.add_task(cmd)
         return input_file
 

@@ -338,7 +338,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
             act_file_path = self.dropdown_colortable.itemData(index_of_selected_item, 32)
-            self.load_act(act_file_path)
+            self.current_act = self.load_act(act_file_path)
+            print(self.current_act)
 
         @self.btn_import_act.clicked.connect
         def import_act_clicked():
@@ -458,10 +459,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.movie280.stop()
             lossy_factor = self.spin_quality280.text()
             # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            self_act_as_txt = path.join('.\\temp',
-                                        path.splitext(
-                                            path.split(
-                                                self.dropdown_colortable.currentText())[1])[0]+'.txt')
+
+            self_act_as_txt = path.join('.\\temp', 'current_act.txt')
             with open(self_act_as_txt, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self_act_as_txt
@@ -548,10 +547,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.movie136.stop()
             lossy_factor = self.spin_quality136.text()
             # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            self_act_as_txt = path.join('.\\temp',
-                                        path.splitext(
-                                            path.split(
-                                                self.dropdown_colortable.currentText())[1])[0]+'.txt')
+            self_act_as_txt = path.join('.\\temp', 'current_act.txt')
             with open(self_act_as_txt, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self_act_as_txt
@@ -597,6 +593,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # self.graphics_scene.addText(''.join(act[0]))
         self.plaintext_act_readout.setPlainText(''.join(act[0]))
         self.statusbar.showMessage(act[1])
+        return act
 
     def load_gif(self, gif_path: str) -> None:
         """

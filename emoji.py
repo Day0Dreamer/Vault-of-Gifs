@@ -44,10 +44,10 @@ class Emoji(object):
         self.gif_path = path.splitext(self.full_path)[0]+'.gif'
         if path.exists(self.gif_path):
             self.has_gif = True
-        self.lossy_path = path.splitext(self.full_path)[0]+'-lossy'+'.gif'
+        self.lossy_path = path.splitext(self.full_path)[0]+'_LOSSY'+'.gif'
         if path.exists(self.lossy_path):
             self.has_lossy = True
-        self.damaged_path = path.splitext(self.full_path)[0]+'-lossy-damaged'+'.gif'
+        self.damaged_path = path.splitext(self.full_path)[0]+'_LOSSY_DAMAGED'+'.gif'
         if path.exists(self.damaged_path):
             self.has_damaged = True
 

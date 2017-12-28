@@ -152,7 +152,7 @@ class GifSicle(QObject):
         if splitext(color_map)[1] == '.act':
             color_map = create_gifsicle_colormap(color_map)
         cmd = r'bin\gifsicle.exe -O3 --no-comments --no-names --no-extensions -d{} --lossy={} ' \
-              r'--use-colormap "{}" {} -o {}'.format(delay, lossy_factor, color_map, input_file, output_file)
+              r'--use-colormap "{}" "{}" -o "{}"'.format(delay, lossy_factor, color_map, input_file, output_file)
 
         print(cmd)
         self.tp.add_task(cmd)

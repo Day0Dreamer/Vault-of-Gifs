@@ -3,6 +3,9 @@ from os.path import exists
 from os import remove
 from sys import exit
 
+import logging
+
+
 config_filename = 'config.json'
 
 
@@ -18,10 +21,12 @@ class ConfigDict(dict):
 
 class Config(object):
     def __init__(self):
+        logging.basicConfig(format='%(levelname)s:%(name)s:%(message)s', level='DEBUG')
+        self.logger = logging.getLogger(__name__)
         self.config = ConfigDict()
         self.default = {
             'flag_show_message_bar_timer': False,
-            'act_folder': './act',
+            'act_folder': 'act',
             'damaged_filesize': '500',
             'fps_delays': {'1': 100,
                            '2': 50,
@@ -127,7 +132,8 @@ class Config(object):
             'logging_level': 'CRITICAL',
             'logging_level_comment': 'CRITICAL, ERROR, WARNING, INFO, DEBUG',
             'console_enabled': False,
-            'name_delimiter': '_'
+            'name_delimiter': '_',
+            'default_folder': 'input'
         }
         self.config_filename = config_filename
 
@@ -145,7 +151,8 @@ class Config(object):
     def load(self):
         try:
             self.config.update(json.load(open(self.config_filename)))
-            print('Config is loaded from disk')
+            self.logger.info('Config is loaded from disk')
+            # print('Config is loaded from disk')
         except FileNotFoundError:
             print(self.config_filename, 'is not found.')
 

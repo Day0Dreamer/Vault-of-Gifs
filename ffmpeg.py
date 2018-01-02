@@ -2,12 +2,14 @@
 """Converts any video file to a gif
 input_file is a full path
 Returns input_file with .gif extension"""
-
+import logging
 from os.path import splitext, exists
 
 from PySide.QtCore import Signal, QObject
 from TasksPool import TasksPool
 from emoji import Emoji
+
+logger = logging.getLogger(__name__)
 
 
 class FFmpeg(QObject):
@@ -28,8 +30,8 @@ class FFmpeg(QObject):
                 self.add(emoji.full_path, emoji.fps)
                 self.run()
             else:
-                print(__name__, 'Warning: {} has no video file'.format(emoji.name_no_ext))
-                # todo заменить этот print
+                self.return_signal.emit(__name__, 'Warning: {} has no video file'.format(emoji.name_no_ext))
+
 
     def add(self, input_file, fps, delete_palette=True):
         """
@@ -42,11 +44,14 @@ class FFmpeg(QObject):
         output_file = splitext(input_file)[0]+'.gif'
         cmd = 'bin\\ffmpeg.exe -v error -i "{}" -vf "fps={},scale=-1:-1:flags=lanczos,palettegen=max_colors=256" -y "{}"'.format(input_file, fps, palette_file)
         self.tp.add_task(cmd)
+        logger.debug(cmd + ' added')
         cmd = 'bin\\ffmpeg.exe -v error -i "{}" -i "{}" -lavfi "fps={},scale=-1:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=none" -y "{}"'.format(input_file, palette_file, fps, output_file)
         self.tp.add_task(cmd)
+        logger.debug(cmd + ' added')
         if delete_palette:
             cmd = 'cmd.exe /c del {}'.format(palette_file)
             self.tp.add_task(cmd)
+            logger.debug(cmd + ' added')
         return splitext(input_file)[0] + '.gif'
 
     def run(self):

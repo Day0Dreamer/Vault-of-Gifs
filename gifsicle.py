@@ -3,6 +3,7 @@
 
 """
 from PySide.QtCore import Signal, QEventLoop, QTimer, QObject
+import logging
 
 from TasksPool import TasksPool
 from emoji import Emoji
@@ -12,7 +13,7 @@ from config import Config
 
 config = Config()
 conf_damaged_filesize = int(config()['damaged_filesize'])*1024
-
+logger = logging.getLogger(__name__)
 
 class GifSicle(QObject):
     return_signal = Signal(str)
@@ -38,7 +39,7 @@ class GifSicle(QObject):
                 else:
                     self.updated(emoji, lossy_factor, color_map)
             else:
-                print(__name__, 'Warning: {} has no gif made'.format(emoji.name_no_ext))
+                logger.warning(__name__, 'Warning: {} has no gif made'.format(emoji.name_no_ext))
 
     def updated(self, emoji, lossy_factor, color_map):
         self.add(input_file=emoji.gif_path,
@@ -75,7 +76,7 @@ class GifSicle(QObject):
                 self.run()
                 damaged_filesize = getsize(emoji.damaged_path)
                 if damaged_filesize > conf_damaged_filesize:
-                    print('Lossy factor of 400 is still not enough. Drop file')
+                    logger.info('Lossy factor of 400 is still not enough. Drop file')
                 else:
                     filesizes[lossy_factor] = damaged_filesize
                     lossy_factor = 0
@@ -105,8 +106,9 @@ class GifSicle(QObject):
                         # Get new filesize and difference
                         damaged_filesize = getsize(emoji.damaged_path)
                         filesize_difference = damaged_filesize - conf_damaged_filesize
-                        print('Lossy: {}, Current filesize: {} bytes, Needed filesize {} bytes, Difference {} bytes'
-                              .format(lossy_factor, damaged_filesize, conf_damaged_filesize, filesize_difference))
+                        logger.info('Lossy: {}, Current filesize: {} bytes, '
+                                    'Needed filesize {} bytes, Difference {} bytes'
+                                    .format(lossy_factor, damaged_filesize, conf_damaged_filesize, filesize_difference))
                         # If filesize is 10Kb too less
                         if filesize_difference < filesize_headroom:
                             # Do more quality and more size
@@ -126,9 +128,9 @@ class GifSicle(QObject):
                             endless_loop_check = {'+': 0, '-': 0}
                             # Double the headroom
                             filesize_headroom *= 2
-                            print('Endless loop detected, new headroom is: {} bytes'.format(filesize_headroom))
+                            logger.debug('Endless loop detected, new headroom is: {} bytes'.format(filesize_headroom))
             else:
-                print('Lossy file is {} Kb, there is no need for damaged file'.format(lossy_filesize))
+                logger.info('Lossy file is {} Kb, there is no need for damaged file'.format(lossy_filesize))
 
     def loop(self, emoji, lossy_factor, color_map):
         self.tp = TasksPool()
@@ -154,7 +156,7 @@ class GifSicle(QObject):
         cmd = r'bin\gifsicle.exe -O3 --no-comments --no-names --no-extensions -d{} --lossy={} ' \
               r'--use-colormap "{}" "{}" -o "{}"'.format(delay, lossy_factor, color_map, input_file, output_file)
 
-        print(cmd)
+        logger.debug(cmd + ' added')
         self.tp.add_task(cmd)
         return input_file
 

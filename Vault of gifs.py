@@ -1,25 +1,51 @@
 # encoding: utf-8
 import os  # todo убрать этот импорт
+# todo Добавить нахождение файлов gif если нет avi
+# todo Поправить баг где act список не обновляется при смене working_directory
+# todo Добавить оповещение о размере файла после нажатия кнопки Update
+# todo Добавить автовыбор палитры при импорте
+# todo Добавить автозагрузку гифок во вьюпорты (максимального фпс) после выбора папки.
+# todo Вынести with open(self.color_table, 'w') as txt: в отдельную функцию
 
+# todo При выборе папки во вьюверы должны автоматически конвевртироваться из avi и загружаться версии с максимальным FPS
+# todo (это не обязательно 30FPS) готовые для кручения Lossy.
+# todo При выборе видео/гиф с другим фпс он должна загружаться в соответсвующий вьювер.
+# todo При нажатии кнопки экспорт должна производится конвертация ВСЕХ avi в выбранной папке (с соответсвующими
+# todo настройками Lossy для 136x136 и 280x280), далее конвертация DAMAGED-версий, затем конвертация файла с именем
+# todo [NameofComposition[Version]].mov в h264 с настройками кодека на 100%.
+# todo При повторном выборе папки, с уже произведённым экспортом повевдение программы меняться не должно - при любом
+# todo совпадении по именам - овверайдить без диалоговых окон.
+# todo Сборка проекта:
+# todo При нажатии на кнопку "Collect and Send Project Files" долже запускаться отдельный скрипт.
+# todo Кнопка должна быть активна только при выбранной папке.
+#
+# todo Примерный функционал БУДЕТ выглядеть так
+# todo а. Найти месторасположение выбранной папки.
+# todo б. Удалить в выбранной папке все avi файлы, др. файлы не
+# todo б. Перейти на уровень выше и загрузить выбранную папку с именем
+# todo [NameofComposition[Version]] и папку с именем [NameofComposition[Version]]_sources на сервер.
+
+import PySide.QtCore as QtCore
+import PySide.QtGui as QtGui
+from PySide.QtGui import QDialog
+
+from widgets import MainWindow_UI
+from widgets import settings
+from widgets import stylesheet
+
+from os import path, listdir, walk, remove, rmdir, makedirs
+from shutil import copy2
+from time import sleep
+import winreg
+
+import logging  # Logging is configured inside config module
+from config import Config
 from TasksPool import TasksPool
 from gifsicle import GifSicle
 from ffmpeg import FFmpeg
 from emoji import Emoji
 from export import Conversion
-from config import Config
-
-import PySide.QtCore as QtCore
-import PySide.QtGui as QtGui
-from os import path, listdir, walk, remove, rmdir, makedirs
-from shutil import copy2
-from time import sleep
-import logging
-import winreg
-
 import act_reader
-from widgets import MainWindow_UI
-from widgets import settings
-from widgets import stylesheet
 
 # ################################# CONFIG ################################### #
 config = Config()
@@ -29,28 +55,12 @@ act_folder = config()['act_folder']
 damaged_filesize = int(config()['damaged_filesize'])
 logging_level = config()['logging_level']
 console_flag = config()['console_enabled']
+default_project_folder = config()['default_folder']
 icons_folder_name = 'icons'
 
 # ################################ LOGGING ################################### #
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging_level)
-# todo сделать так, чтобы логгер писал имя файла откуда лог
+# # todo сделать так, чтобы логгер писал имя файла откуда лог
 
-# ############################### END CONFIG ################################# #
-
-# # ################################ CONSTANTS ################################# #
-# ITEM_EMOJI_OBJECT =  0x100
-# ITEM_NAME =          0x101
-# ITEM_VERSION =       0x102
-# ITEM_RESOLUTION =    0x103
-# ITEM_FPS =           0x104
-# ITEM_LOSSY =         0x105
-# ITEM_DAMAGED =       0x105
-# ITEM_FULL_PATH =     0x106
-# # ############################### END CONSTANTS ############################## #
-
-
-def files_in_folder(folder, ext):
-    return [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]
 
 
 class PsFolder(object):
@@ -140,7 +150,8 @@ class ActListModel(QtCore.QAbstractListModel):
 
     def __init__(self, act_list):
         super(ActListModel, self).__init__()
-        self.act_list = act_list
+        self.act_list = []
+        self.update(act_list)
 
     def rowCount(self, parent):
         return len(self.act_list)
@@ -171,9 +182,26 @@ class ActListModel(QtCore.QAbstractListModel):
         #         return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
 
     def update(self, folder):
+        self.reset()
         self.rowsAboutToBeInserted.emit(self,0,0)
+        self.beginInsertRows(self.index(0),0,0)
         self.act_list = files_in_folder(folder, 'act')
+        self.endInsertRows()
         self.rowsInserted.emit(self,0,0)
+        if len(self.act_list) == 0:
+
+            error_message = 'Please import one color_palette.act inside \n{}'.format(path.abspath(folder))
+            logging.warning(error_message.replace('\n',''))
+            error_box = QtGui.QMessageBox()
+            error_box.setStyleSheet(stylesheet.houdini)
+            error_box.setWindowTitle('File error')
+            error_box.setText('There is .act file missing'+' '*50)
+            error_box.setInformativeText(error_message)
+            error_box.exec_()
+
+
+def files_in_folder(folder, ext):
+    return [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]
 
 
 def make_folder_structure():
@@ -199,12 +227,12 @@ def clean_folder(folder: str):
 class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
     # todo прикрутить ПКМ меню в списке видосов
     # todo сделать сортировку в меню списка видосов
-    def __init__(self):
+    def __init__(self, input_folder=default_project_folder):
         super(QtMainWindow, self).__init__()
         self.setupUi(self)
         self.setStyleSheet(stylesheet.houdini)
 
-        self.working_directory = 'input'  # todo Вынести это в конфиг
+        self.working_directory = input_folder
         self.videolist_model = None
         self.ffmpeg = None
         self.gifsicle = None
@@ -217,6 +245,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.original_280_gif = None
         self.original_136_gif = None
         self.tp = None
+        self.color_table = None
         # todo разобраться с self.launcher self.launcher = Launcher()
         # todo разобраться с self.main_task_pool self.main_task_pool = TasksPool()
 
@@ -227,7 +256,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
 
         # Update the video list on initial program start
-        self.make_video_list()
+        if len(self.working_directory):
+            self.make_video_list()
 
         # ################################# TOP BAR ################################## #
         # File menu
@@ -310,6 +340,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             if directory:
                 self.working_directory = directory
                 self.update_video_list()
+                self.actlist_model.update(directory)
+                self.dropdown_colortable.setCurrentIndex(0)
 
         @self.list_videoslist.activated.connect
         def avi_activated_decorated(video_list_item):
@@ -332,19 +364,23 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.load_gif(self.working_emoji.gif_path)
 
         # Add acts from folder to list widget
-        self.actlist_model = ActListModel(files_in_folder(self.working_directory, 'act'))
-        self.dropdown_colortable.setModel(self.actlist_model)
+        # todo if len(self.working_directory):
+        if True:
+            self.actlist_model = ActListModel(self.working_directory)
+            # self.actlist_model.no_act_files_found.connect(QtError())
+            # QtError()
+            # todo 000
+            self.dropdown_colortable.setModel(self.actlist_model)
 
         @self.dropdown_colortable.currentIndexChanged.connect
         def dropdown_colortable_selected(index_of_selected_item):
             act_file_path = self.dropdown_colortable.itemData(index_of_selected_item, 32)
             self.current_act = self.load_act(act_file_path)
-            print(self.current_act)
 
         @self.btn_import_act.clicked.connect
         def import_act_clicked():
             photoshop_paths = PsFolder().ps_paths
-            print(photoshop_paths[0])
+            # print(photoshop_paths[0])
             if len(photoshop_paths) > 1:
                 logging.warning('Multiple Photoshop paths found, using {}'.format(photoshop_paths[0]))
             files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
@@ -382,9 +418,14 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         def btn_export_clicked():
             # Dictionary two lossy values from their interface spinners
             lossy_dict = {'136': self.spin_quality136.text(), '280': self.spin_quality280.text()}
-            color_map = self.dropdown_colortable.itemData(self.dropdown_colortable.currentIndex(), 32)
+            self.color_table = path.join('.\\temp', 'current_act.txt')
+            # We generate a colormap from the colormap viewer window
+            with open(self.color_table, 'w') as txt:
+                txt.writelines(self.plaintext_act_readout.toPlainText())
+            color_table = self.color_table
             # Start export conversion using dir user selected and lossy dict
-            self.conversion = Conversion(self.working_directory, lossy_dict, color_map)
+            self.conversion = Conversion(self.working_directory, lossy_dict, color_table)
+
             # todo сделать обработку экспорта пустой папки
 
         @self.btn_collect.clicked.connect
@@ -458,12 +499,13 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie280.stop()
             lossy_factor = self.spin_quality280.text()
+            # Instead of generating a txt file for a colortable
             # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-
-            self_act_as_txt = path.join('.\\temp', 'current_act.txt')
-            with open(self_act_as_txt, 'w') as txt:
+            self.color_table = path.join('.\\temp', 'current_act.txt')
+            # We generate a colormap from the colormap viewer window
+            with open(self.color_table, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
-            color_table = self_act_as_txt
+            color_table = self.color_table
 
             # self.btn_update280.setEnabled(False)
             self.gc = GifSicle(self.working_emoji, lossy_factor, color_table)
@@ -474,13 +516,16 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             # .return_signal.connect(self.console_add)
 
             self.load_gif(output_file)
-            # self.btn_update280.setEnabled(True)
         self.btn_update280.clicked.connect(btn_update280_clicked)
 
         # ############################### RIGHT COLUMN ############################### #
 
         # Load the color table viewer
-        self.load_act(files_in_folder(self.working_directory, 'act')[self.dropdown_colortable.currentIndex()])
+        if len(default_project_folder):
+            files = files_in_folder(self.working_directory, 'act')
+            if len(files):
+                self.load_act(files[self.dropdown_colortable.currentIndex()])
+
 
 
         @self.btn_fb136.clicked.connect
@@ -546,11 +591,13 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie136.stop()
             lossy_factor = self.spin_quality136.text()
+            # Instead of generating a txt file for a colortable
             # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            self_act_as_txt = path.join('.\\temp', 'current_act.txt')
-            with open(self_act_as_txt, 'w') as txt:
+            self.color_table = path.join('.\\temp', 'current_act.txt')
+            # We generate a colormap from the colormap viewer window
+            with open(self.color_table, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
-            color_table = self_act_as_txt
+            color_table = self.color_table
 
             GifSicle(self.working_emoji, lossy_factor, color_table)
             self.load_gif(output_file)
@@ -587,7 +634,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
     # ################################# LOADERS ################################## #
 
     def load_act(self, act_file):
-        # print(act_file)
+        self.plaintext_act_readout.setToolTip('{} is loaded.\n\n'
+                                              'You can see and edit the color map here.\n'
+                                              'Those changes appear on update and export.'.format(act_file))
         self.plaintext_act_readout.clear()
         act = act_reader.act_to_list(act_file)
         # self.graphics_scene.addText(''.join(act[0]))
@@ -660,8 +709,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         for input_file in files:
             self.tp = TasksPool()
             self.tp.return_signal.connect(self.console_add)
-            self.tp.add_task('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
-                             '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
+            # self.tp.add_task('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
+            #                  '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
+            self.tp.add_task('bin\\ffmpeg.exe -i "{}" -an "{}.mp4"'.format(input_file, input_file))
             self.tp.launch_list()
 
     def minimal_size(self):
@@ -675,22 +725,3 @@ if __name__ == '__main__':
     MainWindowObj.show()
 
     app.exec_()
-
-# Замечания по автоматизации:
-# 2.
-# a. При выборе папки во вьюверы должны автоматически конвевртироваться из avi и загружаться версии с максимальным FPS
-    # (это не обязательно 30FPS) готовые для кручения Lossy.
-# б. При выборе видео/гиф с другим фпс он должна загружаться в соответсвующий вьювер.
-# в. При нажатии кнопки экспорт должна производится конвертация ВСЕХ avi в выбранной папке (с соответсвующими
-    # настройками Lossy для 136x136 и 280x280), далее конвертация DAMAGED-версий, затем конвертация файла с именем
-    # [NameofComposition[Version]].mov в h264 с настройками кодека на 100%.
-# г.При повторном выборе папки, с уже произведённым экспортом повевдение программы меняться не должно - при любом
-    # совпадении по именам - овверайдить без диалоговых окон.
-# Сборка проекта:
-# 3. При нажатии на кнопку "Collect and Send Project Files" долже запускаться отдельный скрипт.
-# Кнопка должна быть активна только при выбранной папке.
-#
-# Примерный функционал БУДЕТ выглядеть так
-# а. Найти месторасположение выбранной папки.
-# б. Удалить в выбранной папке все avi файлы, др. файлы не
-# б. Перейти на уровень выше и загрузить выбранную папку с именем [NameofComposition[Version]] и папку с именем [NameofComposition[Version]]_sources на сервер.

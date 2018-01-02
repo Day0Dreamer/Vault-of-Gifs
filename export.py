@@ -1,14 +1,18 @@
 # encoding: utf-8
 # Добавить обработку ненахождения карты цветов в папке инпут
+
 from PySide.QtCore import QEventLoop, Signal, QObject, QTimer
-from PySide.QtGui import QApplication
+from PySide.QtGui import QApplication, QMessageBox
 
 import sys
+import logging
 import argparse
 from emoji import Emoji
 from ffmpeg import FFmpeg
 from gifsicle import GifSicle
 from os import path, listdir
+
+logger = logging.getLogger(__name__)
 
 
 # noinspection PyCallByClass
@@ -16,6 +20,7 @@ class Conversion(QObject):
     conversion1_done = Signal()
     conversion2_done = Signal()
     conversion3_done = Signal()
+    error = Signal(str)
 
     def __init__(self, project_folder, lossy_factor, color_map=None):
         super(Conversion, self).__init__()
@@ -27,7 +32,15 @@ class Conversion(QObject):
             try:
                 self.color_map = self.files_in_folder(self.project_folder, 'act')[0]
             except IndexError:
-                print('Please put one color_palette.act in the folder')
+                error_message = 'Please put one color_palette.act in the folder'
+                logger.warning(error_message)
+                error_box = QMessageBox()
+                # error_box.setStyleSheet(self.styleSheet())
+                error_box.setWindowTitle('File error')
+                error_box.setText('There is .act file missing')
+                error_box.setInformativeText(error_message)
+                error_box.exec_()
+                return
         else:
             self.color_map = color_map
 

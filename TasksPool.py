@@ -5,7 +5,7 @@ This module allows you to queue and launch processes using PySide's QProcess
 from PySide.QtCore import QObject, QProcess, Signal, QEventLoop
 from PySide.QtGui import QApplication
 import logging
-
+logger = logging.getLogger(__name__)
 
 class TasksPool(QObject):
     """
@@ -35,7 +35,7 @@ class TasksPool(QObject):
         :param task: Is a string used to start a process
         """
         self.process = QProcess(self)
-        self.process.finished.connect(lambda *x: logging.info(str(task)+' reports done'))
+        self.process.finished.connect(lambda *x: logger.debug(task + ' reports complete'))
         self.process.finished.connect(lambda *x: self.return_signal.emit('►'+task+'◄reports complete'))
         self.process.finished.connect(self.task_done)
         # self.process.readyRead.connect(lambda *x: print(str(self.process.readAll())))

@@ -1,8 +1,10 @@
 # encoding: utf-8
-import warnings
+import logging
 from os import path
 from config import Config
 import re
+
+logger = logging.getLogger(__name__)
 
 __config = Config()
 fps_delays = __config()['fps_delays']
@@ -57,7 +59,7 @@ class Emoji(object):
         if re.match(name_filter, path.split(args[0])[1]):
             return super(Emoji, cls).__new__(cls)
         else:
-            warnings.warn('File {} does not apply to naming convention'.format(args[0]))
+            logger.warn('File {} does not apply to naming convention'.format(args[0]))
             return
 
     def __repr__(self):

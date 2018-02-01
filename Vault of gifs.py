@@ -34,6 +34,7 @@ from widgets import settings
 from widgets import stylesheet
 
 from os import path, listdir, walk, remove, rmdir, makedirs
+import subprocess
 from shutil import copy2
 from time import sleep
 import winreg
@@ -342,6 +343,10 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.update_video_list()
                 self.actlist_model.update(directory)
                 self.dropdown_colortable.setCurrentIndex(0)
+        self.btn_input_folder.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        @self.btn_input_folder.customContextMenuRequested.connect
+        def btn_input_folder_open_menu(pos):
+            subprocess.Popen(r'explorer "{}"'.format(self.working_directory))
 
         @self.list_videoslist.activated.connect
         def avi_activated_decorated(video_list_item):
@@ -427,12 +432,12 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.conversion = Conversion(self.working_directory, lossy_dict, color_table)
 
             # todo сделать обработку экспорта пустой папки
-
         @self.btn_collect.clicked.connect
         def collect():
             self.console_add('Collecting process has started')
             self.statusbar.showMessage('Collecting process has started')
             # todo сделать коллект проекта с загрузкой
+
 
         # ############################## MIDDLE COLUMN ############################### #
 

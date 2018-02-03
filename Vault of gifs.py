@@ -3,7 +3,6 @@ import os  # todo убрать этот импорт
 # todo Добавить нахождение файлов gif если нет avi
 # todo Поправить баг где act список не обновляется при смене working_directory
 # todo Добавить оповещение о размере файла после нажатия кнопки Update
-# todo Добавить автовыбор палитры при импорте
 # todo Добавить автозагрузку гифок во вьюпорты (максимального фпс) после выбора папки.
 # todo Вынести with open(self.color_table, 'w') as txt: в отдельную функцию
 
@@ -61,7 +60,6 @@ icons_folder_name = 'icons'
 
 # ################################ LOGGING ################################### #
 # # todo сделать так, чтобы логгер писал имя файла откуда лог
-
 
 
 class PsFolder(object):
@@ -190,7 +188,6 @@ class ActListModel(QtCore.QAbstractListModel):
         self.endInsertRows()
         self.rowsInserted.emit(self,0,0)
         if len(self.act_list) == 0:
-
             error_message = 'Please import one color_palette.act inside \n{}'.format(path.abspath(folder))
             logging.warning(error_message.replace('\n',''))
             error_box = QtGui.QMessageBox()
@@ -245,6 +242,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.output_file = None
         self.original_280_gif = None
         self.original_136_gif = None
+        self.loaded_280 = None
+        self.loaded_136 = None
         self.tp = None
         self.color_table = None
         # todo разобраться с self.launcher self.launcher = Launcher()
@@ -363,10 +362,14 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.console_add('='*50+'\n')
                 self.ffmpeg.return_signal.disconnect(self.console_add)
                 self.working_file = self.working_emoji.full_path
-                self.load_gif(self.working_emoji.gif_path)
+                # self.load_gif(self.working_emoji.gif_path)
                 self.update_video_list()
             else:
                 self.load_gif(self.working_emoji.gif_path)
+            if self.working_emoji.resolution == '136x136':
+                self.loaded_136 = self.working_emoji
+            elif self.working_emoji.resolution == '280x280':
+                self.loaded_280 = self.working_emoji
 
         # Add acts from folder to list widget
         # todo if len(self.working_directory):
@@ -415,9 +418,20 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                         copy_act(file)
                 else:
                     copy_act(file)
-            self.actlist_model.update(self.working_directory)
 
-                    # todo update the act file model
+            self.actlist_model.update(self.working_directory)
+            # Select the first of selected files in the dropdown menu
+            first_file = files[0]
+            first_file_stripped = path.splitext(path.basename(first_file))[0]
+            index = self.actlist_model.index(0)
+            index_of_first_item = self.actlist_model.match(index, QtCore.Qt.DisplayRole, first_file_stripped)
+            if len(index_of_first_item):
+                index_of_first_item = index_of_first_item[0].row()
+                self.dropdown_colortable.setCurrentIndex(index_of_first_item)
+            else:
+                raise FileNotFoundError
+
+                # todo update the act file model
 
         @self.btn_export.clicked.connect
         def btn_export_clicked():
@@ -500,7 +514,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 btn_update280_clicked()
 
         def btn_update280_clicked():
-            working_file = self.movie280.fileName()
+            # working_file = self.movie280.fileName()
+            working_file = self.loaded_280.gif_path
+            print(working_file)
             output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie280.stop()
             lossy_factor = self.spin_quality280.text()
@@ -513,7 +529,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             color_table = self.color_table
 
             # self.btn_update280.setEnabled(False)
-            self.gc = GifSicle(self.working_emoji, lossy_factor, color_table)
+            self.gc = GifSicle(self.loaded_280, lossy_factor, color_table)
             # self.gc = GifSicle() todo разобраться что происходит тут
             # self.gc.return_signal.connect(lambda x: print(x))
             # self.gc.add(self.working_emoji, lossy_factor, color_table)
@@ -521,6 +537,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             # .return_signal.connect(self.console_add)
 
             self.load_gif(output_file)
+            temp_file_size = path.getsize(output_file)/1024
+            self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
         self.btn_update280.clicked.connect(btn_update280_clicked)
 
         # ############################### RIGHT COLUMN ############################### #
@@ -592,7 +610,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 btn_update136_clicked()
 
         def btn_update136_clicked():
-            working_file = self.movie136.fileName()
+            # working_file = self.movie136.fileName()
+            working_file = self.loaded_136.gif_path
             output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie136.stop()
             lossy_factor = self.spin_quality136.text()
@@ -604,8 +623,10 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self.color_table
 
-            GifSicle(self.working_emoji, lossy_factor, color_table)
+            GifSicle(self.loaded_136, lossy_factor, color_table)
             self.load_gif(output_file)
+            temp_file_size = path.getsize(output_file)/1024
+            self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
         self.btn_update136.clicked.connect(btn_update136_clicked)
 
     def make_video_list(self, folder=None, ext='avi'):

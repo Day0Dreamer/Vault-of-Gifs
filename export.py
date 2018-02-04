@@ -1,5 +1,6 @@
 # encoding: utf-8
 # Добавить обработку ненахождения карты цветов в папке инпут
+from PySide import QtGui
 
 from PySide.QtCore import QEventLoop, Signal, QObject, QTimer
 from PySide.QtGui import QApplication, QMessageBox
@@ -10,7 +11,9 @@ import argparse
 from emoji import Emoji
 from ffmpeg import FFmpeg
 from gifsicle import GifSicle
-from os import path, listdir
+from os import path, listdir, remove
+
+from widgets import stylesheet
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +23,7 @@ class Conversion(QObject):
     conversion1_done = Signal()
     conversion2_done = Signal()
     conversion3_done = Signal()
+    conversion4_done = Signal()
     error = Signal(str)
 
     def __init__(self, project_folder, lossy_factor, color_map=None):
@@ -48,11 +52,13 @@ class Conversion(QObject):
         self.conversion1_done.connect(self.loop.quit)
         self.conversion1_done.connect(self.gifs2lossy)
         self.conversion2_done.connect(self.gifs2damaged)
+        self.conversion3_done.connect(self.cleanup)
         if __name__ == '__main__':
-            self.conversion3_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
+            self.conversion4_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
         self.conversion1_done.connect(lambda: print('c1done'))
         self.conversion2_done.connect(lambda: print('c2done'))
         self.conversion3_done.connect(lambda: print('c3done'))
+        self.conversion4_done.connect(lambda: print('c4done'))
         self.avis2gif()
         self.loop.exec_()
 
@@ -92,6 +98,28 @@ class Conversion(QObject):
                     lossy_factor = self.lossy_factor['280']
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_damaged=True)
         QTimer.singleShot(0, self.conversion3_done)
+
+    def cleanup(self):
+        all_temps = [temps for temps in self.files_in_folder(self.project_folder, 'tmp')]
+        for temp_file in all_temps:
+            remove(temp_file)
+        all_gifs = [gifs for gifs in self.files_in_folder(self.project_folder, 'gif')]
+        for temp_gif in all_gifs:
+            if "LOSSY" not in temp_gif:
+                try:
+                    remove(temp_gif)
+                except PermissionError as e:
+                    logging.warning(e)
+                    error_message = str(e)
+                    # logging.warning(error_message.replace('\n',''))
+                    error_box = QtGui.QMessageBox()
+                    error_box.setStyleSheet(stylesheet.houdini)
+                    error_box.setWindowTitle('File error')
+                    error_box.setText(error_message)
+                    # error_box.setInformativeText(error_message)
+                    error_box.exec_()
+        QTimer.singleShot(0, self.conversion4_done)
+
 
     def files_in_folder(self, folder='input', ext='avi'):
         return [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]

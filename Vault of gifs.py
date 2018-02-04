@@ -1,7 +1,6 @@
 # encoding: utf-8
 import os  # todo убрать этот импорт
 # todo Добавить нахождение файлов gif если нет avi
-# todo Добавить автозагрузку гифок во вьюпорты (максимального фпс) после выбора папки.
 # todo Вынести with open(self.color_table, 'w') as txt: в отдельную функцию
 
 # todo При выборе папки во вьюверы должны автоматически конвевртироваться из avi и загружаться версии с максимальным FPS
@@ -189,15 +188,15 @@ class ActListModel(QtCore.QAbstractListModel):
             logging.warning("Ye, there an error, but we don't care")
         self.endInsertRows()
         self.rowsInserted.emit(self,0,0)
-        if len(self.act_list) == 0:
-            error_message = 'Please import one color_palette.act inside \n{}'.format(path.abspath(folder))
-            logging.warning(error_message.replace('\n',''))
-            error_box = QtGui.QMessageBox()
-            error_box.setStyleSheet(stylesheet.houdini)
-            error_box.setWindowTitle('File error')
-            error_box.setText('There is .act file missing'+' '*50)
-            error_box.setInformativeText(error_message)
-            error_box.exec_()
+        # if len(self.act_list) == 0:
+        #     error_message = 'Please import one color_palette.act inside \n{}'.format(path.abspath(folder))
+        #     logging.warning(error_message.replace('\n',''))
+        #     error_box = QtGui.QMessageBox()
+        #     error_box.setStyleSheet(stylesheet.houdini)
+        #     error_box.setWindowTitle('File error')
+        #     error_box.setText('There is .act file missing'+' '*50)
+        #     error_box.setInformativeText(error_message)
+        #     error_box.exec_()
 
 
 def files_in_folder(folder, ext):
@@ -471,6 +470,21 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 
         @self.btn_export.clicked.connect
         def btn_export_clicked():
+
+            if self.actlist_model.rowCount(self) == 0:
+                if self.working_directory == '':
+                    error_message = 'There is no project directory specified'
+                else:
+                    error_message = 'Please import one color_palette.act inside \n{}'.format(self.working_directory)
+                logging.warning(error_message.replace('\n', ''))
+                error_box = QtGui.QMessageBox()
+                error_box.setStyleSheet(stylesheet.houdini)
+                error_box.setWindowTitle('File error')
+                error_box.setText('There is .act file missing'+' '*50)
+                error_box.setInformativeText(error_message)
+                error_box.exec_()
+                return 1
+
             # Dictionary two lossy values from their interface spinners
             lossy_dict = {'136': self.spin_quality136.text(), '280': self.spin_quality280.text()}
             self.color_table = path.join('.\\temp', 'current_act.txt')
@@ -478,6 +492,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             with open(self.color_table, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self.color_table
+            self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             # Start export conversion using dir user selected and lossy dict
             self.conversion = Conversion(self.working_directory, lossy_dict, color_table)
 

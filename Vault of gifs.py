@@ -43,12 +43,12 @@ from ffmpeg import FFmpeg
 from emoji import Emoji
 from export import Conversion
 import act_reader
+import updater
 
 # ################################# CONFIG ################################### #
 config = Config()
 fps_delays = config()['fps_delays']
 flag_show_message_bar_timer = config()['flag_show_message_bar_timer']
-act_folder = config()['act_folder']
 damaged_filesize = int(config()['damaged_filesize'])
 logging_level = config()['logging_level']
 console_flag = config()['console_enabled']
@@ -200,14 +200,17 @@ class ActListModel(QtCore.QAbstractListModel):
 
 
 def files_in_folder(folder, ext):
-    return [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]
+    try:
+        result = [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]
+    except FileNotFoundError as e:
+        logging.warning(e)
+        result = ''
+    return result
 
 
 def make_folder_structure():
     makedirs('temp', exist_ok=True)
-    makedirs('bin', exist_ok=True)
-    makedirs('input', exist_ok=True)
-    makedirs('act', exist_ok=True)
+#     makedirs('bin', exist_ok=True)
 make_folder_structure()
 
 

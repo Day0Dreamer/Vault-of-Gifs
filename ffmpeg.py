@@ -30,7 +30,7 @@ class FFmpeg(QObject):
                 self.add(emoji.full_path, emoji.fps)
                 self.run()
             else:
-                self.return_signal.emit(__name__, 'Warning: {} has no video file'.format(emoji.name_no_ext))
+                self.return_signal.emit(__name__ + 'Warning: {} has no video file'.format(emoji.name_no_ext))
 
 
     def add(self, input_file, fps, delete_palette=True):

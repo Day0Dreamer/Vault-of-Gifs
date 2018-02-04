@@ -26,7 +26,6 @@ class Config(object):
         self.config = ConfigDict()
         self.default = {
             'flag_show_message_bar_timer': False,
-            'act_folder': 'act',
             'damaged_filesize': '500',
             'fps_delays': {'01': 100,
                            '02': 50,
@@ -133,7 +132,7 @@ class Config(object):
             'logging_level_comment': 'CRITICAL, ERROR, WARNING, INFO, DEBUG',
             'console_enabled': False,
             'name_delimiter': '_',
-            'default_folder': 'input',
+            'default_folder': '',
             'preload_files': True
         }
         self.config_filename = config_filename

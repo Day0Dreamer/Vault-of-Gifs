@@ -13,6 +13,7 @@ from ffmpeg import FFmpeg
 from gifsicle import GifSicle
 from os import path, listdir, remove
 
+from handbrake import Handbrake
 from widgets import stylesheet
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ class Conversion(QObject):
     conversion2_done = Signal()
     conversion3_done = Signal()
     conversion4_done = Signal()
+    conversion5_done = Signal()
     error = Signal(str)
 
     def __init__(self, project_folder, lossy_factor, color_map=None):
@@ -52,13 +54,15 @@ class Conversion(QObject):
         self.conversion1_done.connect(self.loop.quit)
         self.conversion1_done.connect(self.gifs2lossy)
         self.conversion2_done.connect(self.gifs2damaged)
-        self.conversion3_done.connect(self.cleanup)
+        self.conversion3_done.connect(self.handbrake)
+        self.conversion4_done.connect(self.cleanup)
         if __name__ == '__main__':
-            self.conversion4_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
+            self.conversion5_done.connect(lambda: QTimer.singleShot(1000, qapp.quit))
         self.conversion1_done.connect(lambda: print('c1done'))
         self.conversion2_done.connect(lambda: print('c2done'))
         self.conversion3_done.connect(lambda: print('c3done'))
         self.conversion4_done.connect(lambda: print('c4done'))
+        self.conversion5_done.connect(lambda: print('c5done'))
         self.avis2gif()
         self.loop.exec_()
 
@@ -99,6 +103,11 @@ class Conversion(QObject):
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_damaged=True)
         QTimer.singleShot(0, self.conversion3_done)
 
+    def handbrake(self):
+        emoji_list = [Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)]
+        Handbrake(emoji_list[0])
+        QTimer.singleShot(0, self.conversion4_done)
+
     def cleanup(self):
         all_temps = [temps for temps in self.files_in_folder(self.project_folder, 'tmp')]
         for temp_file in all_temps:
@@ -118,7 +127,7 @@ class Conversion(QObject):
                     error_box.setText(error_message)
                     # error_box.setInformativeText(error_message)
                     error_box.exec_()
-        QTimer.singleShot(0, self.conversion4_done)
+        QTimer.singleShot(0, self.conversion5_done)
 
 
     def files_in_folder(self, folder='input', ext='avi'):

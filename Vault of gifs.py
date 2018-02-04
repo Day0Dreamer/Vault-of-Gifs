@@ -1,8 +1,6 @@
 # encoding: utf-8
 import os  # todo убрать этот импорт
 # todo Добавить нахождение файлов gif если нет avi
-# todo Поправить баг где act список не обновляется при смене working_directory
-# todo Добавить оповещение о размере файла после нажатия кнопки Update
 # todo Добавить автозагрузку гифок во вьюпорты (максимального фпс) после выбора папки.
 # todo Вынести with open(self.color_table, 'w') as txt: в отдельную функцию
 
@@ -56,6 +54,7 @@ damaged_filesize = int(config()['damaged_filesize'])
 logging_level = config()['logging_level']
 console_flag = config()['console_enabled']
 default_project_folder = config()['default_folder']
+preload_files = config()['preload_files']
 icons_folder_name = 'icons'
 
 # ################################ LOGGING ################################### #
@@ -184,7 +183,10 @@ class ActListModel(QtCore.QAbstractListModel):
         self.reset()
         self.rowsAboutToBeInserted.emit(self,0,0)
         self.beginInsertRows(self.index(0),0,0)
-        self.act_list = files_in_folder(folder, 'act')
+        try:
+            self.act_list = files_in_folder(folder, 'act')
+        except FileNotFoundError:
+            logging.warning("Ye, there an error, but we don't care")
         self.endInsertRows()
         self.rowsInserted.emit(self,0,0)
         if len(self.act_list) == 0:
@@ -311,7 +313,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             for i in files_in_folder(self.working_directory, 'gif'):
                 remove(i)
-            self.update_video_list()
+            # self.update_video_list()
+            self.make_video_list()
 
         # Button for unloading running gifs in the viewports
         self.actionUnloadGifs = QtGui.QAction(self)
@@ -339,16 +342,47 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             directory = QtGui.QFileDialog.getExistingDirectory(self)
             if directory:
                 self.working_directory = directory
-                self.update_video_list()
+                # self.update_video_list()
+                self.make_video_list()
                 self.actlist_model.update(directory)
                 self.dropdown_colortable.setCurrentIndex(0)
+                # load the most fps image
+                if preload_files:
+                    self.movie136.setFileName('')
+                    self.movie136.stop()
+                    self.movie280.setFileName('')
+                    self.movie280.stop()
+                    # get count of how many items are in the video list
+                    items_count = self.videolist_model.rowCount(self.videolist_model)
+                    res136 = {}  # Dict for only 136 entries
+                    res280 = {}  # Dict for only 280 entries
+                    # Walk through the model and separate entries by resolution
+                    for item in range(items_count):
+                        emoji = self.videolist_model.data(self.actlist_model.index(item), 32)
+                        if emoji.resolution == '136x136':
+                            res136.update({str(emoji.fps): item})
+                        elif emoji.resolution == '280x280':
+                            res280.update({str(emoji.fps): item})
+                    # Sort entries by highest FPS
+                    fps_136 = sorted(res136.keys(), reverse=True)
+                    fps_280 = sorted(res280.keys(), reverse=True)
+                    if len(fps_136):
+                        top_fps_136 = sorted(res136.keys(), reverse=True)[0]
+                        # Click on the appropriate items in the ModelViewer
+                        avi_activated(self.videolist_model.index(res136[top_fps_136]))
+                        avi_activated(self.videolist_model.index(res136[top_fps_136]))
+                    if len(fps_280):
+                        top_fps_280 = sorted(res280.keys(), reverse=True)[0]
+                        # Click on the appropriate items in the ModelViewer
+                        avi_activated(self.videolist_model.index(res280[top_fps_280]))
+                        avi_activated(self.videolist_model.index(res280[top_fps_280]))
         self.btn_input_folder.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
         @self.btn_input_folder.customContextMenuRequested.connect
         def btn_input_folder_open_menu(pos):
             subprocess.Popen(r'explorer "{}"'.format(self.working_directory))
 
-        @self.list_videoslist.activated.connect
-        def avi_activated_decorated(video_list_item):
+        def avi_activated(video_list_item):
             self.working_emoji = video_list_item.data(32)
             # Calling FFmpeg if there is no gif created
             if not self.working_emoji.has_gif:
@@ -363,13 +397,15 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.ffmpeg.return_signal.disconnect(self.console_add)
                 self.working_file = self.working_emoji.full_path
                 # self.load_gif(self.working_emoji.gif_path)
-                self.update_video_list()
+                # self.update_video_list()
+                self.make_video_list()
             else:
                 self.load_gif(self.working_emoji.gif_path)
             if self.working_emoji.resolution == '136x136':
                 self.loaded_136 = self.working_emoji
             elif self.working_emoji.resolution == '280x280':
                 self.loaded_280 = self.working_emoji
+        self.list_videoslist.activated.connect(avi_activated)
 
         # Add acts from folder to list widget
         # todo if len(self.working_directory):
@@ -643,19 +679,19 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             # Enable the collect button
             self.btn_collect.setEnabled(True)
 
-    def update_video_list(self, folder=None, ext='avi'):
-        # If no folder specified, update the current working directory
-        if not folder:
-            folder = self.working_directory
-        if len(files_in_folder(folder, ext)) > 0:
-            # Make a dictionary out of emojis, when emoji object is not none (has been successfully created)
-            emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
-            # Make a model
-            self.videolist_model = VideoListModel(emoji_dict)
-            # Assign the model to the list view
-            self.list_videoslist.setModel(self.videolist_model)
-            # Enable the collect button
-            self.btn_collect.setEnabled(True)
+    # def update_video_list(self, folder=None, ext='avi'):
+    #     # If no folder specified, update the current working directory
+    #     if not folder:
+    #         folder = self.working_directory
+    #     if len(files_in_folder(folder, ext)) > 0:
+    #         # Make a dictionary out of emojis, when emoji object is not none (has been successfully created)
+    #         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in files_in_folder(folder, ext) if Emoji(emoji)}
+    #         # Make a model
+    #         self.videolist_model = VideoListModel(emoji_dict)
+    #         # Assign the model to the list view
+    #         self.list_videoslist.setModel(self.videolist_model)
+    #         # Enable the collect button
+    #         self.btn_collect.setEnabled(True)
 
     # ################################# LOADERS ################################## #
 

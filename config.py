@@ -28,15 +28,15 @@ class Config(object):
             'flag_show_message_bar_timer': False,
             'act_folder': 'act',
             'damaged_filesize': '500',
-            'fps_delays': {'1': 100,
-                           '2': 50,
-                           '3': 33,
-                           '4': 25,
-                           '5': 20,
-                           '6': 16,
-                           '7': 14,
-                           '8': 12,
-                           '9': 11,
+            'fps_delays': {'01': 100,
+                           '02': 50,
+                           '03': 33,
+                           '04': 25,
+                           '05': 20,
+                           '06': 16,
+                           '07': 14,
+                           '08': 12,
+                           '09': 11,
                            '10': 10,
                            '11': 9,
                            '12': 8,
@@ -133,7 +133,8 @@ class Config(object):
             'logging_level_comment': 'CRITICAL, ERROR, WARNING, INFO, DEBUG',
             'console_enabled': False,
             'name_delimiter': '_',
-            'default_folder': 'input'
+            'default_folder': 'input',
+            'preload_files': True
         }
         self.config_filename = config_filename
 

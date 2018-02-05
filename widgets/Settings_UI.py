@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\Settings.ui'
 #
-# Created: Mon Feb  5 18:36:16 2018
+# Created: Mon Feb  5 19:09:29 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -53,6 +53,9 @@ class Ui_dialog_settings(object):
         self.default_folder_browse = QtGui.QToolButton(dialog_settings)
         self.default_folder_browse.setObjectName("default_folder_browse")
         self.gridLayout.addWidget(self.default_folder_browse, 3, 2, 1, 1)
+        self.logging_level = QtGui.QComboBox(dialog_settings)
+        self.logging_level.setObjectName("logging_level")
+        self.gridLayout.addWidget(self.logging_level, 5, 1, 1, 2)
         self.default_folder = QtGui.QLineEdit(dialog_settings)
         self.default_folder.setObjectName("default_folder")
         self.gridLayout.addWidget(self.default_folder, 3, 1, 1, 1)
@@ -68,9 +71,14 @@ class Ui_dialog_settings(object):
         self.name_delimiter = QtGui.QLineEdit(dialog_settings)
         self.name_delimiter.setObjectName("name_delimiter")
         self.gridLayout.addWidget(self.name_delimiter, 4, 1, 1, 2)
-        self.logging_level = QtGui.QComboBox(dialog_settings)
-        self.logging_level.setObjectName("logging_level")
-        self.gridLayout.addWidget(self.logging_level, 5, 1, 1, 2)
+        self.label_overwrite_gifs = QtGui.QLabel(dialog_settings)
+        self.label_overwrite_gifs.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_overwrite_gifs.setObjectName("label_overwrite_gifs")
+        self.gridLayout.addWidget(self.label_overwrite_gifs, 7, 0, 1, 1)
+        self.overwrite_gifs = QtGui.QCheckBox(dialog_settings)
+        self.overwrite_gifs.setText("")
+        self.overwrite_gifs.setObjectName("overwrite_gifs")
+        self.gridLayout.addWidget(self.overwrite_gifs, 7, 1, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
         self.buttonBox = QtGui.QDialogButtonBox(dialog_settings)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -92,4 +100,5 @@ class Ui_dialog_settings(object):
         self.label_preload_files.setText(QtGui.QApplication.translate("dialog_settings", "Preload files", None, QtGui.QApplication.UnicodeUTF8))
         self.label_level.setText(QtGui.QApplication.translate("dialog_settings", "Logging level", None, QtGui.QApplication.UnicodeUTF8))
         self.default_folder_browse.setText(QtGui.QApplication.translate("dialog_settings", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_overwrite_gifs.setText(QtGui.QApplication.translate("dialog_settings", "Overwrite Gifs", None, QtGui.QApplication.UnicodeUTF8))
 

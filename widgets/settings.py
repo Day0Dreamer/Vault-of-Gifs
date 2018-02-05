@@ -31,6 +31,7 @@ class QtSettings(QDialog, ui.Ui_dialog_settings):
         self.logging_level.addItems(logging_level_comment)
         # self.logging_level.setCurrentIndex(0)
         self.console_enabled.setChecked(console_flag)
+        self.overwrite_gifs.setChecked(overwrite_gifs)
         self.buttonBox.button(QDialogButtonBox.RestoreDefaults).clicked.connect(self.restore_defaults)
 
         self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)

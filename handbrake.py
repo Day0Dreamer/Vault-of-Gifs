@@ -46,7 +46,7 @@ class Handbrake(QObject):
         :return: String with resulting gif's path
         """
         output_file = splitext(input_file)[0]+'.mp4'
-        cmd = 'bin\\HandBrakeCLI.exe -i {} -o "{}"'.format(input_file, output_file)
+        cmd = 'bin\\HandBrakeCLI.exe -i "{}" -o "{}"'.format(input_file, output_file)
         self.tp.add_task(cmd)
         logger.debug(cmd + ' added')
 

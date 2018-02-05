@@ -13,6 +13,7 @@ console_flag = config()['console_enabled']
 default_project_folder = config()['default_folder']
 preload_files = config()['preload_files']
 name_delimiter = config()['name_delimiter']
+overwrite_gifs = config()['overwrite_gifs']
 icons_folder_name = 'icons'
 
 

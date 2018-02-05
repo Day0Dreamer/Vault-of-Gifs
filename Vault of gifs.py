@@ -408,7 +408,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         def avi_activated(video_list_item):
             self.working_emoji = video_list_item.data(32)
             # Calling FFmpeg if there is no gif created
-            if not self.working_emoji.has_gif:
+            print(type(settings.overwrite_gifs))
+            if not self.working_emoji.has_gif or settings.overwrite_gifs:
                 self.statusbar.showMessage('Generating the gif')
                 self.ffmpeg = FFmpeg()
                 self.ffmpeg.return_signal.connect(self.console_add)
@@ -422,6 +423,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 # self.load_gif(self.working_emoji.gif_path)
                 # self.update_video_list()
                 self.make_video_list()
+                self.load_gif(self.working_emoji.gif_path)
             else:
                 self.load_gif(self.working_emoji.gif_path)
             if self.working_emoji.resolution == '136x136':

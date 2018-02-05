@@ -12,7 +12,7 @@ from emoji import Emoji
 from ffmpeg import FFmpeg
 from gifsicle import GifSicle
 from os import path, listdir, remove
-
+from widgets import settings
 from handbrake import Handbrake
 from widgets import stylesheet
 
@@ -70,7 +70,7 @@ class Conversion(QObject):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
         for item in emoji_dict.keys():
             # print(emoji_dict[item])
-            if not emoji_dict[item].has_gif:
+            if not emoji_dict[item].has_gif or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'gif file missing, creating one')
                 FFmpeg(emoji_dict[item])
         QTimer.singleShot(0, self.conversion1_done)

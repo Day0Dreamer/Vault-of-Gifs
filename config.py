@@ -132,7 +132,8 @@ class Config(object):
             'console_enabled': False,
             'name_delimiter': '_',
             'default_folder': '',
-            'preload_files': True
+            'preload_files': True,
+            'overwrite_gifs': True
         }
         self.config_filename = config_filename
 

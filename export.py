@@ -78,7 +78,7 @@ class Conversion(QObject):
     def gifs2lossy(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
         for item in emoji_dict.keys():
-            if not emoji_dict[item].has_lossy:
+            if not emoji_dict[item].has_lossy or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'lossy file missing, creating one')
                 # Get the proper lossy value for the gifsicle
                 if '136' in emoji_dict[item].resolution:
@@ -93,7 +93,7 @@ class Conversion(QObject):
     def gifs2damaged(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
         for item in emoji_dict.keys():
-            if not emoji_dict[item].has_damaged:
+            if not emoji_dict[item].has_damaged or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'damaged file missing, creating')
                 # Get the proper lossy value for the gifsicle
                 if '136' in emoji_dict[item].resolution:

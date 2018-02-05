@@ -34,6 +34,11 @@ class Handbrake(QObject):
             else:
                 self.return_signal.emit(__name__ + 'Warning: {} has no .mov file'.format(emoji.name_no_ext))
                 logger.warning('Warning: {} has no .mov file'.format(emoji.name_no_ext))
+        elif isinstance(emoji, str):
+            video_file = emoji
+            if exists(video_file):
+                self.add(video_file)
+                self.run()
 
     def add(self, input_file):
         """

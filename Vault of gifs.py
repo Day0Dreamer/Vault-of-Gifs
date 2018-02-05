@@ -34,7 +34,8 @@ import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui
 from PySide.QtGui import QDialog
 
-from widgets import MainWindow_UI
+from handbrake import Handbrake
+from widgets import MainWindow_UI, about
 from widgets import settings
 from widgets import stylesheet
 
@@ -58,7 +59,6 @@ import updater
 # ################################# CONFIG ################################### #
 config = Config()
 fps_delays = config()['fps_delays']
-flag_show_message_bar_timer = config()['flag_show_message_bar_timer']
 damaged_filesize = int(config()['damaged_filesize'])
 logging_level = config()['logging_level']
 console_flag = config()['console_enabled']
@@ -266,6 +266,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # ############################ MODIFY INTERFACE ############################## #
         # todo исправить размер интерфейса self.setGeometry(200, 200, 40, 40)
 
+        self.setWindowTitle('Vault of Gifs | v 0.1')
         # Modify relationship between main interface columns
         self.splitter_main.setStretchFactor(0, 1)
         self.splitter_main.setStretchFactor(2, 2)
@@ -351,6 +352,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             # self.dial = settings.QtSettings() # Изменить
             # self.dial.exec_()
             print(self.size())
+            self.dial = about.QtAbout()
+            self.dial.exec_()
         # todo доработать окно about
 
         # ############################### LEFT COLUMN ################################ #
@@ -851,12 +854,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                                                           "All Files (*.*);;MOV (*.mov)", "MOV (*.mov)")
         print(files, filtr)
         for input_file in files:
-            self.tp = TasksPool()
-            self.tp.return_signal.connect(self.console_add)
-            # self.tp.add_task('bin\\ffmpeg.exe -i "{}" -c:a copy -c:v libx264 -profile:v high '
-            #                  '-crf 21 -preset fast "{}.mp4"'.format(input_file, input_file))
-            self.tp.add_task('bin\\ffmpeg.exe -i "{}" -an "{}.mp4"'.format(input_file, input_file))
-            self.tp.launch_list()
+            Handbrake(input_file)
+
 
     def minimal_size(self):
         self.resize(0, 0)

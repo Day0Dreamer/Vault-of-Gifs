@@ -25,7 +25,6 @@ class Config(object):
         self.logger = logging.getLogger(__name__)
         self.config = ConfigDict()
         self.default = {
-            'flag_show_message_bar_timer': False,
             'damaged_filesize': '500',
             'fps_delays': {'01': 100,
                            '02': 50,

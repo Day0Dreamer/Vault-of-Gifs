@@ -49,7 +49,7 @@ class FFmpeg(QObject):
         self.tp.add_task(cmd)
         logger.debug(cmd + ' added')
         if delete_palette:
-            cmd = 'cmd.exe /c del {}'.format(palette_file)
+            cmd = 'cmd.exe /c del "{}"'.format(palette_file)
             self.tp.add_task(cmd)
             logger.debug(cmd + ' added')
         return splitext(input_file)[0] + '.gif'

@@ -15,6 +15,15 @@ import os  # todo убрать этот импорт
 # todo При нажатии на кнопку "Collect and Send Project Files" долже запускаться отдельный скрипт.
 # todo Кнопка должна быть активна только при выбранной папке.
 #
+# todo 0. Зум по умолчанию 2x, ограничить шкалу от 1x до 4x у обоих вьюверов.
+# todo 1. Дебаг автоподгрузки 136х136 при выборе папки.
+# todo 2. Конвертация в мп4 пока не работает.
+# todo 3. Переименовываем Collect Project в Clean Project Folder. При нажатии на кнопку должно проихсодить следующее:
+# todo а. Удаляться все временные файлы (палитры)
+# todo б. Удаляться все avi файлы из которых делались гифки.
+# todo в. Удаляться NameOfFile_Version.mov при успешной конвертации в mp4,
+# todo г. act таблицу импортрованную из папки ps удалять не нужно!
+#
 # todo Примерный функционал БУДЕТ выглядеть так
 # todo а. Найти месторасположение выбранной папки.
 # todo б. Удалить в выбранной папке все avi файлы, др. файлы не
@@ -34,6 +43,7 @@ import subprocess
 from shutil import copy2
 from time import sleep
 import winreg
+from send2trash import send2trash
 
 import logging  # Logging is configured inside config module
 from config import Config
@@ -256,6 +266,11 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # ############################ MODIFY INTERFACE ############################## #
         # todo исправить размер интерфейса self.setGeometry(200, 200, 40, 40)
 
+        # Modify relationship between main interface columns
+        self.splitter_main.setStretchFactor(0, 1)
+        self.splitter_main.setStretchFactor(2, 2)
+        self.splitter_main.setStretchFactor(1, 3)
+
         # Max size of icons in video list
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
 
@@ -294,7 +309,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # todo вынести добавление консоли в другое место
         self.console = QtGui.QTextBrowser(self)
         self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.layout3in1.addWidget(self.console)
+        # self.layout3in1.addWidget(self.console)
         self.console.setMinimumWidth(500)
         self.console.setVisible(console_flag)
         @self.actionShow_console.triggered.connect
@@ -333,8 +348,9 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # About menu
         @self.actionAbout.triggered.connect
         def call_about():
-            self.dial = settings.QtSettings() # Изменить
-            self.dial.exec_()
+            # self.dial = settings.QtSettings() # Изменить
+            # self.dial.exec_()
+            print(self.size())
         # todo доработать окно about
 
         # ############################### LEFT COLUMN ################################ #
@@ -361,6 +377,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                     # Walk through the model and separate entries by resolution
                     for item in range(items_count):
                         emoji = self.videolist_model.data(self.actlist_model.index(item), 32)
+                        print(emoji)
                         if emoji.resolution == '136x136':
                             res136.update({str(emoji.fps): item})
                         elif emoji.resolution == '280x280':
@@ -368,6 +385,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                     # Sort entries by highest FPS
                     fps_136 = sorted(res136.keys(), reverse=True)
                     fps_280 = sorted(res280.keys(), reverse=True)
+                    # print(res136.keys())
                     if len(fps_136):
                         top_fps_136 = sorted(res136.keys(), reverse=True)[0]
                         # Click on the appropriate items in the ModelViewer
@@ -498,14 +516,35 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             # Start export conversion using dir user selected and lossy dict
             self.conversion = Conversion(self.working_directory, lossy_dict, color_table)
+            self.conversion.conversion5_done.connect(self.make_video_list(self.working_directory))
 
-            # todo сделать обработку экспорта пустой папки
-        @self.btn_collect.clicked.connect
-        def collect():
-            self.console_add('Collecting process has started')
-            self.statusbar.showMessage('Collecting process has started')
-            # todo сделать коллект проекта с загрузкой
+        @self.btn_clean.clicked.connect
+        def clean():
+            self.console_add('Cleaning process has started')
+            self.statusbar.showMessage('Cleaning process has started')
+            files_to_delete = files_in_folder(self.working_directory, 'avi')
+            files_to_delete.extend(files_in_folder(self.working_directory, 'tmp'))
+            files_to_delete_names = [path.basename(file) for file in files_to_delete]
+            box = QtGui.QMessageBox()
+            box.setStyleSheet(self.styleSheet())
+            # box_layout = box.layout()
+            # box_layout.setColumnMinimumWidth(1,500)
+            # QtGui.QGridLayout.set
+            box.setWindowTitle('Clean up')
+            box.setText('You are about to delete: \n{}'.format('\n'.join(str(x) for x in files_to_delete_names)))
+            box.setInformativeText('Are you sure?')
+            box.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            box.setDefaultButton(QtGui.QMessageBox.No)
+            user_choice = box.exec_()
+            if user_choice == QtGui.QMessageBox.Yes:
+                [send2trash(file) for file in files_to_delete]
 
+        self.btn_export.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        @self.btn_export.customContextMenuRequested.connect
+        def btn_input_folder_open_menu(pos):
+            self.slider_scale136.setValue(1)
+            self.slider_scale280.setValue(1)
+            self.minimal_size()
 
         # ############################## MIDDLE COLUMN ############################### #
 
@@ -553,14 +592,16 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.slider_speed280.setValue(value)
             self.movie280.setSpeed(value)
 
+        self.previous_scale280 = self.spin_scale280.value()
         @self.spin_scale280.valueChanged.connect
         def spin_scale280_value_changed(value):
             self.statusbar.showMessage('Zoom of 280px changed to {}x'.format(value))
-            self.gifplayer280.setScaledContents(True)
-            self.gifplayer280.setFixedHeight(280 * value)
-            self.gifplayer280.setFixedWidth(280 * value)
+            self.graphicsView_280.scale(1/self.previous_scale280, 1/self.previous_scale280)
+            self.graphicsView_280.scale(value, value)
             self.slider_scale280.setValue(value)
-            self.minimal_size()
+            self.previous_scale280 = self.spin_scale280.value()
+
+        self.spin_scale280.valueChanged.emit(self.spin_scale280.value())
 
         @self.spin_quality280.valueChanged.connect
         def spin_quality280_value_changed():
@@ -602,8 +643,6 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             files = files_in_folder(self.working_directory, 'act')
             if len(files):
                 self.load_act(files[self.dropdown_colortable.currentIndex()])
-
-
 
         @self.btn_fb136.clicked.connect
         def btn_fb136_clicked():
@@ -649,14 +688,15 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.slider_speed136.setValue(value)
             self.movie136.setSpeed(value)
 
+        self.previous_scale136 = self.spin_scale136.value()
         @self.spin_scale136.valueChanged.connect
         def spin_scale136_value_changed(value):
             self.statusbar.showMessage('Zoom of 136px changed to {}x'.format(value))
-            self.gifplayer136.setScaledContents(True)
-            self.gifplayer136.setFixedHeight(136 * value)
-            self.gifplayer136.setFixedWidth(136 * value)
+            self.graphicsView_136.scale(1/self.previous_scale136, 1/self.previous_scale136)
+            self.graphicsView_136.scale(value, value)
             self.slider_scale136.setValue(value)
-            self.minimal_size()
+            self.previous_scale136 = self.spin_scale136.value()
+        self.spin_scale136.valueChanged.emit(self.spin_scale136.value())
 
         @self.spin_quality136.valueChanged.connect
         def spin_quality136_value_changed():
@@ -683,6 +723,29 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
         self.btn_update136.clicked.connect(btn_update136_clicked)
 
+        self.gifplayer136_widget = QtGui.QWidget()
+        self.gifplayer136 = QtGui.QLabel(self.gifplayer136_widget)
+        self.gifplayer136.setMinimumSize(QtCore.QSize(136, 136))
+
+        self.graphics_scene_136 = QtGui.QGraphicsScene()
+        self.graphicsView_136.setScene(self.graphics_scene_136)
+        self.graphicsView_136.setInteractive(1)
+
+        self.graphics_scene_136.addWidget(self.gifplayer136_widget)
+        self.graphicsView_136.scale(2, 2)
+
+        self.gifplayer280_widget = QtGui.QWidget()
+        self.gifplayer280 = QtGui.QLabel(self.gifplayer280_widget)
+        self.gifplayer280.setMinimumSize(QtCore.QSize(280, 280))
+
+        self.graphics_scene_280 = QtGui.QGraphicsScene()
+        self.graphicsView_280.setScene(self.graphics_scene_280)
+        self.graphicsView_280.setInteractive(1)
+
+        self.graphics_scene_280.addWidget(self.gifplayer280_widget)
+        self.graphicsView_280.scale(2, 2)
+
+
     def make_video_list(self, folder=None, ext='avi'):
         # If no folder specified, update the current working directory
         if not folder:
@@ -695,7 +758,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             # Assign the model to the list view
             self.list_videoslist.setModel(self.videolist_model)
             # Enable the collect button
-            self.btn_collect.setEnabled(True)
+            self.btn_clean.setEnabled(True)
 
     # def update_video_list(self, folder=None, ext='avi'):
     #     # If no folder specified, update the current working directory
@@ -763,6 +826,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.movie136.setSpeed(self.spin_speed136.value()*100)  # Automatically set speed using the speed spinner
         self.movie136.start()
         return self.movie136.isValid()
+
 
     def load_palette(self, palette: str) -> None:
         """

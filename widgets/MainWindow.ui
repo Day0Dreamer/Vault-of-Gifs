@@ -6,28 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1072</width>
-    <height>765</height>
+    <width>1180</width>
+    <height>833</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>643</width>
+    <height>555</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <property name="topMargin">
-     <number>9</number>
-    </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="Line" name="separator_topshelf"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="layout3in1">
-      <item>
+     <widget class="QSplitter" name="splitter_main">
+      <widget class="QWidget" name="">
        <layout class="QVBoxLayout" name="layout_fileops">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetNoConstraint</enum>
-        </property>
         <item>
          <widget class="QPushButton" name="btn_input_folder">
           <property name="sizePolicy">
@@ -50,10 +47,16 @@
         <item>
          <widget class="QListView" name="list_videoslist">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>42</width>
+            <height>0</height>
+           </size>
           </property>
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -112,7 +115,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="btn_collect">
+         <widget class="QPushButton" name="btn_clean">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -123,751 +126,674 @@
            </size>
           </property>
           <property name="text">
-           <string>Collect Project</string>
+           <string>Clean Project Folder</string>
           </property>
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="layout_280">
+      </widget>
+      <widget class="QGroupBox" name="layout_gif280">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>280x280 px</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignBottom|Qt::AlignJustify</set>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0">
         <item>
-         <widget class="QGroupBox" name="layout_gif280">
+         <widget class="QGraphicsView" name="graphicsView_280"/>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="layout_playback280">
+          <item>
+           <widget class="QPushButton" name="btn_fb280">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Symbol</family>
+             </font>
+            </property>
+            <property name="text">
+             <string></string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_playpause280">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Symbol</family>
+             </font>
+            </property>
+            <property name="text">
+             <string>⏵/⏸</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_ff280">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Segoe UI Symbol</family>
+             </font>
+            </property>
+            <property name="text">
+             <string></string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="layout_speed280">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="lbl_speed280">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Speed</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="spin_speed280">
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="frame">
+             <bool>true</bool>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::UpDownArrows</enum>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>4.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="slider_speed280">
+            <property name="minimum">
+             <number>10</number>
+            </property>
+            <property name="maximum">
+             <number>400</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::NoTicks</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="layout_quality280">
+          <item alignment="Qt::AlignRight">
+           <widget class="QLabel" name="lbl_quality280">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Plain</enum>
+            </property>
+            <property name="text">
+             <string>Lossy</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spin_quality280">
+            <property name="maximum">
+             <number>1024</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="slider_quality280">
+            <property name="maximum">
+             <number>400</number>
+            </property>
+            <property name="pageStep">
+             <number>20</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksBelow</enum>
+            </property>
+            <property name="tickInterval">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="layout_scale280">
+          <item>
+           <widget class="QLabel" name="lbl_scale280">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Zoom</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spin_scale280">
+            <property name="minimumSize">
+             <size>
+              <width>45</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>4</number>
+            </property>
+            <property name="value">
+             <number>2</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="slider_scale280">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>4</number>
+            </property>
+            <property name="pageStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>2</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_update280">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="title">
-           <string>280x280 px</string>
+          <property name="text">
+           <string>Update</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <property name="spacing">
-            <number>6</number>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="check_livepreview280">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Auto update</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QSplitter" name="splitter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QGroupBox" name="layout_colortable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string>Color table</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QPlainTextEdit" name="plaintext_act_readout">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
            </property>
-           <property name="bottomMargin">
-            <number>9</number>
+           <property name="lineWrapMode">
+            <enum>QPlainTextEdit::NoWrap</enum>
            </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="layout_gif136">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string>136x136 px</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QGraphicsView" name="graphicsView_136">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>2</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="layout_playback136">
            <item>
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
+            <widget class="QPushButton" name="btn_fb136">
+             <property name="enabled">
+              <bool>false</bool>
              </property>
-             <property name="sizeHint" stdset="0">
+             <property name="minimumSize">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
-            </spacer>
-           </item>
-           <item>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="gifplayer280">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>280</width>
-                 <height>280</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>280 px picture</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
+             <property name="font">
+              <font>
+               <family>Segoe UI Symbol</family>
+              </font>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="Line" name="line">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+             <property name="text">
+              <string></string>
              </property>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="layout_playback280">
-             <item>
-              <widget class="QPushButton" name="btn_fb280">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Segoe UI Symbol</family>
-                </font>
-               </property>
-               <property name="text">
-                <string></string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_playpause280">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Segoe UI Symbol</family>
-                </font>
-               </property>
-               <property name="text">
-                <string>⏵/⏸</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_ff280">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Segoe UI Symbol</family>
-                </font>
-               </property>
-               <property name="text">
-                <string></string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="layout_speed280">
-             <property name="topMargin">
-              <number>0</number>
+            <widget class="QPushButton" name="btn_playpause136">
+             <property name="enabled">
+              <bool>false</bool>
              </property>
-             <item>
-              <widget class="QLabel" name="lbl_speed280">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Speed</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="spin_speed280">
-               <property name="wrapping">
-                <bool>false</bool>
-               </property>
-               <property name="frame">
-                <bool>true</bool>
-               </property>
-               <property name="buttonSymbols">
-                <enum>QAbstractSpinBox::UpDownArrows</enum>
-               </property>
-               <property name="minimum">
-                <double>0.100000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>4.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.010000000000000</double>
-               </property>
-               <property name="value">
-                <double>1.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSlider" name="slider_speed280">
-               <property name="minimum">
-                <number>10</number>
-               </property>
-               <property name="maximum">
-                <number>400</number>
-               </property>
-               <property name="singleStep">
-                <number>1</number>
-               </property>
-               <property name="value">
-                <number>100</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="invertedAppearance">
-                <bool>false</bool>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::NoTicks</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Segoe UI Symbol</family>
+               <pointsize>8</pointsize>
+               <italic>false</italic>
+               <underline>false</underline>
+               <kerning>true</kerning>
+              </font>
+             </property>
+             <property name="text">
+              <string>⏵/⏸</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="layout_scale280">
-             <item>
-              <widget class="QLabel" name="lbl_scale280">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Zoom</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spin_scale280">
-               <property name="minimumSize">
-                <size>
-                 <width>45</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>7</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSlider" name="slider_scale280">
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>7</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="layout_quality280">
-             <item alignment="Qt::AlignRight">
-              <widget class="QLabel" name="lbl_quality280">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="text">
-                <string>Lossy</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spin_quality280">
-               <property name="maximum">
-                <number>1024</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSlider" name="slider_quality280">
-               <property name="maximum">
-                <number>400</number>
-               </property>
-               <property name="pageStep">
-                <number>20</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-               <property name="tickInterval">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="layout_preview280">
-             <item>
-              <widget class="QPushButton" name="btn_update280">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
-               <item>
-                <widget class="QCheckBox" name="check_livepreview280">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Auto update</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
+            <widget class="QPushButton" name="btn_ff136">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Segoe UI Symbol</family>
+              </font>
+             </property>
+             <property name="text">
+              <string></string>
+             </property>
+            </widget>
            </item>
           </layout>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="layout_136">
-        <item>
-         <widget class="QGroupBox" name="layout_colortable">
-          <property name="title">
-           <string>Color table</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="layout_speed136">
            <property name="topMargin">
-            <number>4</number>
+            <number>0</number>
            </property>
            <item>
-            <widget class="QPlainTextEdit" name="plaintext_act_readout">
-             <property name="lineWrapMode">
-              <enum>QPlainTextEdit::NoWrap</enum>
+            <widget class="QLabel" name="lbl_speed136">
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Speed</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="layout_gif136">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>136x136 px</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <spacer name="verticalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
+            <widget class="QDoubleSpinBox" name="spin_speed136">
+             <property name="minimum">
+              <double>0.100000000000000</double>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
+             <property name="maximum">
+              <double>4.000000000000000</double>
              </property>
-            </spacer>
+             <property name="singleStep">
+              <double>0.010000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.000000000000000</double>
+             </property>
+            </widget>
            </item>
            <item>
-            <layout class="QGridLayout" name="gridLayout_3">
-             <item row="0" column="0">
-              <widget class="QLabel" name="gifplayer136">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>136</width>
-                 <height>136</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>136 px picture</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
+            <widget class="QSlider" name="slider_speed136">
+             <property name="enabled">
+              <bool>true</bool>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
+             <property name="minimum">
+              <number>10</number>
              </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="Line" name="line_2">
+             <property name="maximum">
+              <number>400</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="layout_scale136">
            <item>
-            <layout class="QHBoxLayout" name="layout_playback136">
-             <item>
-              <widget class="QPushButton" name="btn_fb136">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Segoe UI Symbol</family>
-                </font>
-               </property>
-               <property name="text">
-                <string></string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_playpause136">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Segoe UI Symbol</family>
-                 <pointsize>8</pointsize>
-                 <italic>false</italic>
-                 <underline>false</underline>
-                 <kerning>true</kerning>
-                </font>
-               </property>
-               <property name="text">
-                <string>⏵/⏸</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-               <property name="flat">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_ff136">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Segoe UI Symbol</family>
-                </font>
-               </property>
-               <property name="text">
-                <string></string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="layout_speed136">
-             <property name="topMargin">
-              <number>0</number>
+            <widget class="QLabel" name="lbl_scale136">
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>0</height>
+              </size>
              </property>
-             <item>
-              <widget class="QLabel" name="lbl_speed136">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Speed</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="spin_speed136">
-               <property name="minimum">
-                <double>0.100000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>4.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.010000000000000</double>
-               </property>
-               <property name="value">
-                <double>1.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSlider" name="slider_speed136">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="minimum">
-                <number>10</number>
-               </property>
-               <property name="maximum">
-                <number>400</number>
-               </property>
-               <property name="value">
-                <number>100</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
+             <property name="text">
+              <string>Zoom</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="layout_scale136">
-             <item>
-              <widget class="QLabel" name="lbl_scale136">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Zoom</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spin_scale136">
-               <property name="minimumSize">
-                <size>
-                 <width>45</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>7</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSlider" name="slider_scale136">
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>7</number>
-               </property>
-               <property name="value">
-                <number>1</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <widget class="QSpinBox" name="spin_scale136">
+             <property name="minimumSize">
+              <size>
+               <width>45</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>4</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+            </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="layout_quality136">
-             <item alignment="Qt::AlignRight">
-              <widget class="QLabel" name="lbl_quality136">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Lossy</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spin_quality136">
-               <property name="maximum">
-                <number>1024</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSlider" name="slider_quality136">
-               <property name="maximum">
-                <number>400</number>
-               </property>
-               <property name="pageStep">
-                <number>20</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-               <property name="tickInterval">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="layout_preview136">
-             <item>
-              <widget class="QPushButton" name="btn_update136">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Update</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_2">
-               <item>
-                <widget class="QCheckBox" name="check_livepreview136">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Auto update</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
+            <widget class="QSlider" name="slider_scale136">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>4</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>2</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
            </item>
           </layout>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="layout_quality136">
+           <item alignment="Qt::AlignRight">
+            <widget class="QLabel" name="lbl_quality136">
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Lossy</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spin_quality136">
+             <property name="maximum">
+              <number>1024</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="slider_quality136">
+             <property name="maximum">
+              <number>400</number>
+             </property>
+             <property name="pageStep">
+              <number>20</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBelow</enum>
+             </property>
+             <property name="tickInterval">
+              <number>20</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_update136">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Update</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="check_livepreview136">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Auto update</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -876,7 +802,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1072</width>
+     <width>1180</width>
      <height>21</height>
     </rect>
    </property>
@@ -968,12 +894,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>795</x>
-     <y>643</y>
+     <x>702</x>
+     <y>742</y>
     </hint>
     <hint type="destinationlabel">
-     <x>847</x>
-     <y>640</y>
+     <x>1014</x>
+     <y>746</y>
     </hint>
    </hints>
   </connection>
@@ -984,12 +910,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>795</x>
-     <y>611</y>
+     <x>702</x>
+     <y>710</y>
     </hint>
     <hint type="destinationlabel">
-     <x>845</x>
-     <y>610</y>
+     <x>1014</x>
+     <y>711</y>
     </hint>
    </hints>
   </connection>
@@ -1000,12 +926,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>845</x>
-     <y>610</y>
+     <x>1014</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
-     <x>795</x>
-     <y>611</y>
+     <x>702</x>
+     <y>710</y>
     </hint>
    </hints>
   </connection>
@@ -1016,12 +942,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>847</x>
-     <y>640</y>
+     <x>1014</x>
+     <y>746</y>
     </hint>
     <hint type="destinationlabel">
-     <x>795</x>
-     <y>643</y>
+     <x>702</x>
+     <y>742</y>
     </hint>
    </hints>
   </connection>
@@ -1032,44 +958,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>433</x>
-     <y>611</y>
+     <x>278</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
-     <x>494</x>
-     <y>610</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spin_quality280</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_quality280</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>433</x>
-     <y>643</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>494</x>
-     <y>640</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_scale280</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spin_scale280</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>494</x>
-     <y>610</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>433</x>
-     <y>611</y>
+     <x>582</x>
+     <y>712</y>
     </hint>
    </hints>
   </connection>
@@ -1080,12 +974,44 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>584</x>
-     <y>653</y>
+     <x>582</x>
+     <y>747</y>
     </hint>
     <hint type="destinationlabel">
-     <x>443</x>
-     <y>652</y>
+     <x>278</x>
+     <y>743</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spin_quality280</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_quality280</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>743</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>582</x>
+     <y>747</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_scale280</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spin_scale280</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>582</x>
+     <y>712</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>278</x>
+     <y>711</y>
     </hint>
    </hints>
   </connection>

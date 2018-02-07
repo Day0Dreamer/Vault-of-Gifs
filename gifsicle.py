@@ -146,7 +146,7 @@ class GifSicle(QObject):
     def loop(self, emoji, lossy_factor, color_map):
         self.tp = TasksPool()
         # Make consecutive damaged files
-        self.add(input_file=emoji.lossy_path,
+        self.add(input_file=emoji.gif_path,
                  lossy_factor=lossy_factor,
                  color_map=color_map,
                  delay=emoji.delay,

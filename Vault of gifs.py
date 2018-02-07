@@ -521,7 +521,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
             # Start export conversion using dir user selected and lossy dict
             self.conversion = Conversion(self.working_directory, lossy_dict, color_table)
-            self.conversion.conversion5_done.connect(self.make_video_list(self.working_directory))
+            self.conversion.conversion5_done.connect(lambda: self.make_video_list(self.working_directory))
 
         @self.btn_clean.clicked.connect
         def clean():

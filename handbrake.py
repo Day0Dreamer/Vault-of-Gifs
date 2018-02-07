@@ -6,9 +6,12 @@ import logging
 from os.path import splitext, exists, abspath, join
 
 from PySide.QtCore import Signal, QObject
+from PySide.QtGui import QMessageBox
+
 from TasksPool import TasksPool
 from config import Config
 from emoji import Emoji
+from widgets import stylesheet
 
 logger = logging.getLogger(__name__)
 
@@ -28,12 +31,20 @@ class Handbrake(QObject):
         # If we supply Emoji object, then
         if isinstance(emoji, Emoji):
             video_file = abspath(join(emoji.folder, emoji.name + Config()()['name_delimiter'] + emoji.version + '.mov'))
+            if not exists(video_file):
+                video_file = abspath(join(emoji.folder, emoji.name + '-' + emoji.version + '.mov'))
             if exists(video_file):
                 self.add(video_file)
                 self.run()
             else:
-                self.return_signal.emit(__name__ + 'Warning: {} has no .mov file'.format(emoji.name_no_ext))
-                logger.warning('Warning: {} has no .mov file'.format(emoji.name_no_ext))
+                error_msg = 'Failed to locate {}, based on {}.'.format(video_file, emoji.name_no_ext)
+                self.return_signal.emit(__name__ + error_msg)
+                logger.warning(error_msg)
+                error_box = QMessageBox()
+                error_box.setStyleSheet(stylesheet.houdini)
+                error_box.setWindowTitle('Handbrake mov to mp4 conversion: File error')
+                error_box.setText(error_msg)
+                error_box.exec_()
         elif isinstance(emoji, str):
             video_file = emoji
             if exists(video_file):

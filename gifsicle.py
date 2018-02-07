@@ -5,11 +5,14 @@
 from PySide.QtCore import Signal, QEventLoop, QTimer, QObject
 import logging
 
+from PySide.QtGui import QMessageBox
+
 from TasksPool import TasksPool
 from emoji import Emoji
 from act_reader import create_gifsicle_colormap
 from os.path import splitext, getsize, exists
 from config import Config
+from widgets import stylesheet
 
 config = Config()
 conf_damaged_filesize = int(config()['damaged_filesize'])*1024
@@ -101,7 +104,6 @@ class GifSicle(QObject):
                     # How precise do we want to get to conf_damaged_filesize (500kb)
                     filesize_headroom = -1024*5
                     while damaged_filesize > conf_damaged_filesize:
-                        # Start the loop of processing
                         self.loop(emoji, lossy_factor, color_map)
                         # Get new filesize and difference
                         damaged_filesize = getsize(emoji.damaged_path)
@@ -110,6 +112,15 @@ class GifSicle(QObject):
                                     'Needed filesize {} bytes, Difference {} bytes'
                                     .format(lossy_factor, damaged_filesize, conf_damaged_filesize, filesize_difference))
                         # If filesize is 10Kb too less
+                        if lossy_factor > 400:
+                            logger.info('Lossy factor of 400 is still not enough. Drop file')
+                            error_box = QMessageBox()
+                            error_box.setStyleSheet(stylesheet.houdini)
+                            error_box.setWindowTitle('Lossy number error')
+                            error_box.setText('While exporting DAMAGED version we have hit 400, try exporting with 0-100')
+                            error_box.exec_()
+                            break
+                        # Start the loop of processing
                         if filesize_difference < filesize_headroom:
                             # Do more quality and more size
                             lossy_factor -= 2

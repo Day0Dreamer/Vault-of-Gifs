@@ -73,7 +73,7 @@ class Conversion(QObject):
             if not emoji_dict[item].has_gif or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'gif file missing, creating one')
                 FFmpeg(emoji_dict[item])
-        QTimer.singleShot(0, self.conversion1_done)
+        QTimer.singleShot(1, self.conversion1_done)
 
     def gifs2lossy(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
@@ -88,7 +88,7 @@ class Conversion(QObject):
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_lossy=True)
             else:
                 print('Lossy file for {} already exists, skipping lossy creation'.format(emoji_dict[item].name))
-        QTimer.singleShot(0, self.conversion2_done)
+        QTimer.singleShot(1, self.conversion2_done)
 
     def gifs2damaged(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
@@ -101,12 +101,12 @@ class Conversion(QObject):
                 elif '280' in emoji_dict[item].resolution:
                     lossy_factor = self.lossy_factor['280']
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_damaged=True)
-        QTimer.singleShot(0, self.conversion3_done)
+        QTimer.singleShot(1, self.conversion3_done)
 
     def handbrake(self):
         emoji_list = [Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)]
         Handbrake(emoji_list[0])
-        QTimer.singleShot(0, self.conversion4_done)
+        QTimer.singleShot(1, self.conversion4_done)
 
     def cleanup(self):
         all_temps = [temps for temps in self.files_in_folder(self.project_folder, 'tmp')]
@@ -120,14 +120,12 @@ class Conversion(QObject):
                 except PermissionError as e:
                     logging.warning(e)
                     error_message = str(e)
-                    # logging.warning(error_message.replace('\n',''))
                     error_box = QtGui.QMessageBox()
                     error_box.setStyleSheet(stylesheet.houdini)
                     error_box.setWindowTitle('File error')
                     error_box.setText(error_message)
-                    # error_box.setInformativeText(error_message)
                     error_box.exec_()
-        QTimer.singleShot(0, self.conversion5_done)
+        QTimer.singleShot(1, self.conversion5_done)
 
 
     def files_in_folder(self, folder='input', ext='avi'):

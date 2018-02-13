@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'widgets\Settings.ui'
 #
-# Created: Mon Feb  5 19:09:29 2018
+# Created: Mon Feb 12 20:40:37 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!

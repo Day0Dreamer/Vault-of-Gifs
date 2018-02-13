@@ -37,7 +37,9 @@ from PySide.QtGui import QDialog
 from handbrake import Handbrake
 from widgets import MainWindow_UI, about
 from widgets import settings
+from widgets import palette_editor
 from widgets import stylesheet
+from widgets import viewport
 
 from os import path, listdir, walk, remove, rmdir, makedirs
 import subprocess
@@ -266,11 +268,14 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # ############################ MODIFY INTERFACE ############################## #
         # todo исправить размер интерфейса self.setGeometry(200, 200, 40, 40)
 
-        self.setWindowTitle('Vault of Gifs | v 0.1')
+        self.setWindowTitle('Gifcher | v 0.1')
         # Modify relationship between main interface columns
         self.splitter_main.setStretchFactor(0, 1)
         self.splitter_main.setStretchFactor(2, 2)
         self.splitter_main.setStretchFactor(1, 3)
+
+        self.viewport_widget = viewport.Viewport()
+        self.splitter_main.addWidget(self.viewport_widget)
 
         # Max size of icons in video list
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
@@ -750,7 +755,6 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.graphics_scene_280.addWidget(self.gifplayer280_widget)
         self.graphicsView_280.scale(2, 2)
 
-
     def make_video_list(self, folder=None, ext='avi'):
         # If no folder specified, update the current working directory
         if not folder:
@@ -866,7 +870,18 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 if __name__ == '__main__':
 
     app = QtGui.QApplication([])
-    MainWindowObj = QtMainWindow()
-    MainWindowObj.show()
+    # MainWindowObj = QtMainWindow()
+    # MainWindowObj.show()
+
+    # pe = palette_editor.PaletteEditor()
+    # pe.show()
+
+    vp = viewport.Viewport()
+    path = input('Gif path please! ')
+    if path:
+        vp.load(path)
+    else:
+        vp.load("C:\Python\Vault_Of_Gifs\Fanatics-animated-emoji-07\Fanatics-animated-emoji-07_280x280_15fps_LOSSY.gif")
+    vp.show()
 
     app.exec_()

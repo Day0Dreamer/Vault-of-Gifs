@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Python\Vault_Of_Gifs\widgets\viewport.ui'
 #
-# Created: Tue Feb 13 01:39:35 2018
+# Created: Tue Feb 13 12:52:11 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(411, 575)
+        Form.resize(411, 540)
         self.main_layout = QtGui.QVBoxLayout(Form)
         self.main_layout.setSpacing(0)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
@@ -100,17 +100,6 @@ class Ui_Form(object):
         self.slider_speed.setObjectName("slider_speed")
         self.layout_speed.addWidget(self.slider_speed)
         self.verticalLayout.addLayout(self.layout_speed)
-        self.layout_scale = QtGui.QHBoxLayout()
-        self.layout_scale.setObjectName("layout_scale")
-        self.spin_scale = QtGui.QSpinBox(self.layout_viewport)
-        self.spin_scale.setEnabled(True)
-        self.spin_scale.setMinimumSize(QtCore.QSize(45, 0))
-        self.spin_scale.setMinimum(1)
-        self.spin_scale.setMaximum(99)
-        self.spin_scale.setProperty("value", 2)
-        self.spin_scale.setObjectName("spin_scale")
-        self.layout_scale.addWidget(self.spin_scale)
-        self.verticalLayout.addLayout(self.layout_scale)
         self.layout_quality = QtGui.QHBoxLayout()
         self.layout_quality.setObjectName("layout_quality")
         self.lbl_quality = QtGui.QLabel(self.layout_viewport)

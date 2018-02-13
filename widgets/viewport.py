@@ -4,6 +4,8 @@ from os import path
 
 from widgets import viewport_ui
 
+DEFAULT_SCALE = 2
+
 
 class Viewport(QWidget, viewport_ui.Ui_Form):
 
@@ -14,6 +16,7 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
         self.setupUi(self)
 
         self.movie = QMovie()
+        self.previous_scale = DEFAULT_SCALE
 
         self.graphics_scene = QGraphicsScene()                                           # Create a scene
         self.graphicsView.setScene(self.graphics_scene)                                  # Start watching at the scene
@@ -25,13 +28,20 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
         self.gif_player = self.gif_player_widget.children()[0]                           # Get new handle to QLabel
 
         self.graphicsView.PLAYPAUSE.connect(lambda: self.btn_playpause.toggle())
+        self.TO_STATUS_BAR.connect(lambda x: print(x))
 
         @self.graphicsView.MOUSEWHEEL.connect
         def wheel_zoom(up):
             if up:
-                self.spin_scale.setValue(self.spin_scale.value()+1)
+                change_zoom_by(1)
             else:
-                self.spin_scale.setValue(self.spin_scale.value()-1)
+                change_zoom_by(-1)
+
+        def change_zoom_by(value):
+            self.TO_STATUS_BAR.emit('Zoom of px changed to {}x'.format(value))
+            self.graphicsView.scale(1/self.previous_scale, 1/self.previous_scale)
+            self.previous_scale = max(self.previous_scale + value, 1)
+            self.graphicsView.scale(self.previous_scale, self.previous_scale)
 
         @self.graphicsView.TIME_OFFSET.connect
         def time_scroll(mouse_offset):
@@ -89,23 +99,9 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
         @self.spin_speed.valueChanged.connect
         def speed_spinner_changed(value):
             value = round(value, 2)
-            self.TO_STATUS_BAR.emit('Speed of px changed to {}x'.format(value))
             value *= 100
             self.slider_speed.setValue(value)
             self.movie.setSpeed(value)
-
-        self.previous_scale = self.spin_scale.value()
-        @self.spin_scale.valueChanged.connect
-        def spin_scale_value_changed(value):
-            self.TO_STATUS_BAR.emit('Zoom of px changed to {}x'.format(value))
-            self.graphicsView.scale(1/self.previous_scale, 1/self.previous_scale)
-            self.graphicsView.scale(value, value)
-            # self.slider_scale.setValue(value)
-            self.previous_scale = self.spin_scale.value()
-
-        self.spin_scale.valueChanged.emit(self.spin_scale.value())
-        self.spin_scale.setVisible(False)
-        # self.slider_scale.valueChanged.connect(self.spin_scale.setValue)
 
         @self.spin_quality.valueChanged.connect
         def spin_quality_value_changed():
@@ -113,9 +109,7 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
                 btn_update_clicked()
 
         def btn_update_clicked():
-            # working_file = self.movie.fileName()
             working_file = self.loaded_.gif_path
-            print(working_file)
             output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie.stop()
             lossy_factor = self.spin_quality.text()
@@ -127,13 +121,7 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self.color_table
 
-            # self.btn_update.setEnabled(False)
             self.gc = GifSicle(self.loaded_, lossy_factor, color_table)
-            # self.gc = GifSicle() todo разобраться что происходит тут
-            # self.gc.return_signal.connect(lambda x: print(x))
-            # self.gc.add(self.working_emoji, lossy_factor, color_table)
-            # self.gc.run()
-            # .return_signal.connect(self.console_add)
 
             self.load_gif(output_file)
             temp_file_size = path.getsize(output_file)/1024

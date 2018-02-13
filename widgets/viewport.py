@@ -29,9 +29,9 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
         @self.graphicsView.MOUSEWHEEL.connect
         def wheel_zoom(up):
             if up:
-                self.slider_scale.setValue(self.slider_scale.value()+1)
+                self.spin_scale.setValue(self.spin_scale.value()+1)
             else:
-                self.slider_scale.setValue(self.slider_scale.value()-1)
+                self.spin_scale.setValue(self.spin_scale.value()-1)
 
         @self.graphicsView.TIME_OFFSET.connect
         def time_scroll(mouse_offset):
@@ -100,11 +100,12 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
             self.TO_STATUS_BAR.emit('Zoom of px changed to {}x'.format(value))
             self.graphicsView.scale(1/self.previous_scale, 1/self.previous_scale)
             self.graphicsView.scale(value, value)
-            self.slider_scale.setValue(value)
+            # self.slider_scale.setValue(value)
             self.previous_scale = self.spin_scale.value()
 
         self.spin_scale.valueChanged.emit(self.spin_scale.value())
-        self.slider_scale.valueChanged.connect(self.spin_scale.setValue)
+        self.spin_scale.setVisible(False)
+        # self.slider_scale.valueChanged.connect(self.spin_scale.setValue)
 
         @self.spin_quality.valueChanged.connect
         def spin_quality_value_changed():

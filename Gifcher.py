@@ -35,6 +35,7 @@ import PySide.QtGui as QtGui
 from PySide.QtGui import QDialog
 
 from handbrake import Handbrake
+from messages import corrupted_palette
 from widgets import MainWindow_UI, about
 from widgets import settings
 from widgets import palette_editor
@@ -57,6 +58,7 @@ from emoji import Emoji
 from export import Conversion
 import act_reader
 import updater
+import messages
 
 # ################################# CONFIG ################################### #
 config = Config()
@@ -275,7 +277,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.splitter_main.setStretchFactor(1, 3)
 
         self.viewport_widget = viewport.Viewport()
-        self.splitter_main.addWidget(self.viewport_widget)
+        # self.splitter_main.addWidget(self.viewport_widget)
 
         # Max size of icons in video list
         self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
@@ -792,8 +794,11 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.plaintext_act_readout.clear()
         act = act_reader.act_to_list(act_file)
         # self.graphics_scene.addText(''.join(act[0]))
-        self.plaintext_act_readout.setPlainText(''.join(act[0]))
-        self.statusbar.showMessage(act[1])
+        self.plaintext_act_readout.setPlainText('\n'.join(act[0]))
+        self.statusbar.showMessage('"' + act_file + '"' + ' contains {} color(s)'.format(act[1]))
+        if act[1] > 256:
+            error_msg = corrupted_palette(act_file)
+            QtGui.QMessageBox.warning(self, *error_msg)
         return act
 
     def load_gif(self, gif_path: str) -> None:
@@ -870,18 +875,18 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
 if __name__ == '__main__':
 
     app = QtGui.QApplication([])
-    # MainWindowObj = QtMainWindow()
-    # MainWindowObj.show()
+    MainWindowObj = QtMainWindow()
+    MainWindowObj.show()
 
     # pe = palette_editor.PaletteEditor()
     # pe.show()
 
-    vp = viewport.Viewport()
-    path = input('Gif path please! ')
-    if path:
-        vp.load(path)
-    else:
-        vp.load("C:\Python\Vault_Of_Gifs\Fanatics-animated-emoji-07\Fanatics-animated-emoji-07_280x280_15fps_LOSSY.gif")
-    vp.show()
+    # vp = viewport.Viewport()
+    # path = input('Gif path please! ')
+    # if path:
+    #     vp.load(path)
+    # else:
+    #     vp.load("C:\Python\Vault_Of_Gifs\Fanatics-animated-emoji-07\Fanatics-animated-emoji-07_280x280_15fps_LOSSY.gif")
+    # vp.show()
 
     app.exec_()

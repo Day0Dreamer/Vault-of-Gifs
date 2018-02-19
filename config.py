@@ -5,7 +5,6 @@ from sys import exit
 
 import logging
 
-
 config_filename = 'config.json'
 
 
@@ -164,5 +163,3 @@ class Config(object):
 
     def __call__(self, *args, **kwargs):
         return self.config
-
-# 'act_folder' : r'C:\Users\DayDreamer-i7\AppData\Roaming\Adobe\Adobe Photoshop CC 2017\Optimized Colors',

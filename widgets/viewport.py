@@ -1,6 +1,9 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from os import path
+from emoji import Emoji
+from messages import *
+from update_image import *
 
 from widgets import viewport_ui
 
@@ -13,10 +16,13 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
 
     def __init__(self):
         super(Viewport, self).__init__()
+
         self.setupUi(self)
 
         self.movie = QMovie()
+        self.opened_image = None
         self.previous_scale = DEFAULT_SCALE
+        self.flag1 = False
 
         self.graphics_scene = QGraphicsScene()                                           # Create a scene
         self.graphicsView.setScene(self.graphics_scene)                                  # Start watching at the scene
@@ -109,15 +115,19 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
                 btn_update_clicked()
 
         def btn_update_clicked():
-            working_file = self.loaded_.gif_path
-            output_file = path.splitext(working_file)[0] + '.tmp'
+            if isinstance(self.opened_image, Emoji):
+                working_file = self.opened_image.gif_path
+                output_file = self.opened_image.temp_path
+            if isinstance(self.opened_image, str):
+                working_file = self.opened_image
+                output_file = path.splitext(working_file)[0] + '.tmp'
             self.movie.stop()
             lossy_factor = self.spin_quality.text()
             # Instead of generating a txt file for a colortable
             # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            self.color_table = path.join('.\\temp', 'current_act.txt')
+            color_table_path = path.join('.', 'current_act.txt')
             # We generate a colormap from the colormap viewer window
-            with open(self.color_table, 'w') as txt:
+            with open(color_table_path, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self.color_table
 
@@ -129,20 +139,47 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
         self.btn_update.clicked.connect(btn_update_clicked)
 
         # self.graphicsView.scale(2, 2)
-        
-    def load(self, file):
-        image_dimensions = QImage(file).size()                          # Get image size
-        self.gif_player_widget.setMinimumSize(image_dimensions)         # Set widget's size to image's size
-        self.gif_player.setMinimumSize(image_dimensions)                # Set QLabel's size to image's size
-        self.btn_playpause.setChecked(False)                   # Unpress the play-pause button
-        self.btn_fb.setEnabled(True)                           # Enable back button
-        self.btn_playpause.setEnabled(True)                    # Enable play-pause button
-        self.btn_ff.setEnabled(True)                           # Enable forward button
-        self.layout_viewport.setTitle(path.split(file)[1])     # Set name of the gif as the title
-        self.movie.setFileName('')                             # Free (close) the previous loaded image
-        self.movie = QMovie(file)                              # Create a QMovie instance
-        self.gif_player.setMovie(self.movie)                   # And assign it to the player widget
-        self.movie.setSpeed(self.spin_speed.value()*100)       # Automatically set speed using the speed spinner
+
+    def open_image(self, input_):
+        """
+        This method opens image and sends it to loader
+
+        :param input_: Emoji or str path to the image
+        :return: Loaded image or None if error
+        """
+        self.opened_image = input_                              # Store the image as currently working with
+        if isinstance(input_, Emoji):                           # If it is an Emoji object,
+            input_ = input_.gif_path                            # then convert it to image path
+        elif not isinstance(input_, str):                       # If it is also not a string, then raise an exception
+            raise AttributeError('Trying to open image but it is not a Emoji and not a string')
+        if path.exists(input_):                                 # If path exists
+            self.load(input_)                                   # Load the image
+            return input_
+        else:                                                   # Or notify user that image does not exist
+            error_msg = file_not_found(input_)
+            QMessageBox.critical(QMessageBox(), *error_msg)
+            # todo test this
+            return False
+
+    def load(self, file: str):
+        """
+        This method loads an image to the viewer based on str full path to it
+
+        :param file: Image path
+        :return: If loaded movie is valid and functional
+        """
+        image_dimensions = QImage(file).size()                      # Get image size
+        self.gif_player_widget.setMinimumSize(image_dimensions)     # Set widget's size to image's size
+        self.gif_player.setMinimumSize(image_dimensions)            # Set QLabel's size to image's size
+        self.btn_playpause.setChecked(False)                    # Unpress the play-pause button
+        self.btn_fb.setEnabled(True)                            # Enable back button
+        self.btn_playpause.setEnabled(True)                     # Enable play-pause button
+        self.btn_ff.setEnabled(True)                            # Enable forward button
+        self.layout_viewport.setTitle(path.split(file)[1])      # Set name of the gif as the title
+        self.movie.setFileName('')                              # Free (close) the previous loaded image
+        self.movie = QMovie(file)                               # Create a QMovie instance
+        self.gif_player.setMovie(self.movie)                    # And assign it to the player widget
+        self.movie.setSpeed(self.spin_speed.value()*100)        # Automatically set speed using the speed spinner
         self.movie.start()
         return self.movie.isValid()
 
@@ -151,5 +188,5 @@ if __name__ == '__main__':
     app = QApplication([])
     vp = Viewport()
     vp.show()
-    vp.load("C:\Python\Vault_Of_Gifs\Fanatics-animated-emoji-07\Fanatics-animated-emoji-07_280x280_15fps_LOSSY.gif")
+    vp.open_image(Emoji("C:\Python\Vault_Of_Gifs\Fanatics-animated-emoji-07\Fanatics-animated-emoji-07_280x280_15fps_LOSSY.gif"))
     app.exec_()

@@ -30,8 +30,8 @@ import os  # todo убрать этот импорт
 # todo б. Перейти на уровень выше и загрузить выбранную папку с именем
 # todo [NameofComposition[Version]] и папку с именем [NameofComposition[Version]]_sources на сервер.
 
-import PySide.QtCore as QtCore
-import PySide.QtGui as QtGui
+from PySide.QtCore import *
+from PySide.QtGui import *
 from PySide.QtGui import QDialog
 
 from handbrake import Handbrake
@@ -40,7 +40,7 @@ from widgets import MainWindow_UI, about
 from widgets import settings
 from widgets import palette_editor
 from widgets import stylesheet
-from widgets import viewport
+# from widgets import viewport
 
 from os import path, listdir, walk, remove, rmdir, makedirs
 import subprocess
@@ -115,7 +115,7 @@ class PsFolder(object):
         return ps_paths
 
 
-class VideoListModel(QtCore.QAbstractListModel):
+class VideoListModel(QAbstractListModel):
 
     def __init__(self, emojis={}):
         super(VideoListModel, self).__init__()
@@ -133,22 +133,22 @@ class VideoListModel(QtCore.QAbstractListModel):
         if role == 32:
             return emoji
         # Setup the text we see in the list
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             return str(emoji.name)
         # Setup the icon we see in the list
-        if role == QtCore.Qt.DecorationRole:
+        if role == Qt.DecorationRole:
             icon_path = path.join(path.curdir, icons_folder_name, "{}_{}.png".format(emoji.resolution, emoji.fps))
             if path.exists(icon_path):
-                icon = QtGui.QIcon(icon_path)
+                icon = QIcon(icon_path)
             else:
-                icon = QtGui.QPixmap(32, 32)
+                icon = QPixmap(32, 32)
             return icon
         # Setup the tooltip
-        if role == QtCore.Qt.ToolTipRole:
+        if role == Qt.ToolTipRole:
             return emoji.full_info().replace(' | ', '\n')
-        if role == QtCore.Qt.BackgroundRole:
+        if role == Qt.BackgroundRole:
             if emoji.has_gif:
-                return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
+                return QBrush(QColor(50, 60, 50, 255))
 
     def update(self, folder):
         pass
@@ -157,7 +157,7 @@ class VideoListModel(QtCore.QAbstractListModel):
         self.rowsInserted.emit(self,0,0)
 
 
-class ActListModel(QtCore.QAbstractListModel):
+class ActListModel(QAbstractListModel):
 
     def __init__(self, act_list):
         super(ActListModel, self).__init__()
@@ -174,23 +174,23 @@ class ActListModel(QtCore.QAbstractListModel):
         if role == 32:
             return act_file
         # Setup the text we see in the list
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             return path.splitext(path.split(act_file)[-1])[0]
         # Setup the icon we see in the list
-        if role == QtCore.Qt.DecorationRole:
+        if role == Qt.DecorationRole:
             icon_path = r"icons\ps.png"
             if path.exists(icon_path):
-                icon = QtGui.QIcon(icon_path)
+                icon = QIcon(icon_path)
             else:
-                icon = QtGui.QPixmap(16, 16)
+                icon = QPixmap(16, 16)
             return icon
         # Setup the tooltip
-        if role == QtCore.Qt.ToolTipRole:
+        if role == Qt.ToolTipRole:
             return act_file
             # return emoji.full_info().replace(' | ', '\n')
-        # if role == QtCore.Qt.BackgroundRole:
+        # if role == Qt.BackgroundRole:
         #     if emoji.has_gif:
-        #         return QtGui.QBrush(QtGui.QColor(50, 60, 50, 255))
+        #         return QBrush(QColor(50, 60, 50, 255))
 
     def update(self, folder):
         self.reset()
@@ -205,7 +205,7 @@ class ActListModel(QtCore.QAbstractListModel):
         # if len(self.act_list) == 0:
         #     error_message = 'Please import one color_palette.act inside \n{}'.format(path.abspath(folder))
         #     logging.warning(error_message.replace('\n',''))
-        #     error_box = QtGui.QMessageBox()
+        #     error_box = QMessageBox()
         #     error_box.setStyleSheet(stylesheet.houdini)
         #     error_box.setWindowTitle('File error')
         #     error_box.setText('There is .act file missing'+' '*50)
@@ -217,7 +217,7 @@ def files_in_folder(folder, ext):
     try:
         result = [path.join(path.abspath(folder), file) for file in listdir(folder) if '.'+str(ext) == path.splitext(file)[1]]
     except FileNotFoundError as e:
-        logging.warning(e)
+        logging.warning(str(e)+' Files in folder')
         result = ''
     return result
 
@@ -240,7 +240,7 @@ def clean_folder(folder: str):
             rmdir(path.join(root, name))
 
 
-class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
+class QtMainWindow(QMainWindow, MainWindow_UI.Ui_MainWindow):
     # todo прикрутить ПКМ меню в списке видосов
     # todo сделать сортировку в меню списка видосов
     def __init__(self, input_folder=default_project_folder):
@@ -252,8 +252,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.videolist_model = None
         self.ffmpeg = None
         self.gifsicle = None
-        self.movie136 = QtGui.QMovie()
-        self.movie280 = QtGui.QMovie()
+        self.movie136 = QMovie()
+        self.movie280 = QMovie()
         self.working_emoji = None
         self.lossy_file_size = None
         self.lossy_factor = None
@@ -271,16 +271,21 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # todo исправить размер интерфейса self.setGeometry(200, 200, 40, 40)
 
         self.setWindowTitle('Gifcher | v 0.1')
-        # Modify relationship between main interface columns
-        self.splitter_main.setStretchFactor(0, 1)
-        self.splitter_main.setStretchFactor(2, 2)
-        self.splitter_main.setStretchFactor(1, 3)
 
-        self.viewport_widget = viewport.Viewport()
-        # self.splitter_main.addWidget(self.viewport_widget)
+        self.splitter_right.addWidget(self.viewport_136)
+        self.splitter_main.insertWidget(1, self.viewport_280)
+        # Modify relationship between main interface columns
+        self.splitter_main.setStretchFactor(0, 2)
+        self.splitter_main.setStretchFactor(1, 4)
+        self.splitter_main.setStretchFactor(2, 3)
+
+        self.splitter_right.setStretchFactor(0, 15)
+        self.splitter_right.setStretchFactor(1, 10)
+        # self.viewport_widget.open_image(Emoji("C:\Python\Giftcher\BrandinCooksEmojiTest_01\BrandinCooksEmojiTest_01_280x280_30fps.gif"))
+
 
         # Max size of icons in video list
-        self.list_videoslist.setIconSize(QtCore.QSize(32, 32))
+        self.list_videoslist.setIconSize(QSize(32, 32))
 
         # Update the video list on initial program start
         if len(self.working_directory):
@@ -315,8 +320,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                     self.statusbar.showMessage('Trying to clean temp folder, but failed')
 
         # todo вынести добавление консоли в другое место
-        self.console = QtGui.QTextBrowser(self)
-        self.console.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        self.console = QTextBrowser(self)
+        self.console.setWordWrapMode(QTextOption.NoWrap)
         # self.layout3in1.addWidget(self.console)
         self.console.setMinimumWidth(500)
         self.console.setVisible(console_flag)
@@ -329,10 +334,10 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 self.statusbar.showMessage('Console is disabled')
 
         # Button for deleting gif files in the working directory
-        self.actionDelete_gif_files = QtGui.QAction(self)
+        self.actionDelete_gif_files = QAction(self)
         self.actionDelete_gif_files.setObjectName("actionDelete_temp_files")
         self.menuOptions.addAction(self.actionDelete_gif_files)
-        self.actionDelete_gif_files.setText(QtGui.QApplication.translate("MainWindow", "&Clean generated gifs", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionDelete_gif_files.setText(QApplication.translate("MainWindow", "&Clean generated gifs", None, QApplication.UnicodeUTF8))
         @self.actionDelete_gif_files.triggered.connect
         def clean_gifs():
             self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
@@ -342,14 +347,14 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             self.make_video_list()
 
         # Button for unloading running gifs in the viewports
-        self.actionUnloadGifs = QtGui.QAction(self)
+        self.actionUnloadGifs = QAction(self)
         self.actionUnloadGifs.setObjectName("actionDelete_temp_files")
         self.menuOptions.addAction(self.actionUnloadGifs)
-        self.actionUnloadGifs.setText(QtGui.QApplication.translate("MainWindow", "&Unload gifs", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionUnloadGifs.setText(QApplication.translate("MainWindow", "&Unload gifs", None, QApplication.UnicodeUTF8))
         @self.actionUnloadGifs.triggered.connect
         def unload_gifs():
-            self.movie136.setFileName('')
-            self.movie280.setFileName('')
+            self.viewport_280.unload_image()
+            self.viewport_136.unload_image()
 
         self.actionmov2mp4.triggered.connect(self.convert_mov_to_mp4)
 
@@ -366,8 +371,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         # ############################### LEFT COLUMN ################################ #
         @self.btn_input_folder.clicked.connect
         def input_folder():
-            # options = QtGui.QFileDialog.DontResolveSymlinks | QtGui.QFileDialog.ShowDirsOnly
-            directory = QtGui.QFileDialog.getExistingDirectory(self)
+            # options = QFileDialog.DontResolveSymlinks | QFileDialog.ShowDirsOnly
+            directory = QFileDialog.getExistingDirectory(self)
             if directory:
                 self.working_directory = directory
                 # self.update_video_list()
@@ -406,7 +411,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                         # Click on the appropriate items in the ModelViewer
                         avi_activated(self.videolist_model.index(res280[top_fps_280]))
                         avi_activated(self.videolist_model.index(res280[top_fps_280]))
-        self.btn_input_folder.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.btn_input_folder.setContextMenuPolicy(Qt.CustomContextMenu)
 
         @self.btn_input_folder.customContextMenuRequested.connect
         def btn_input_folder_open_menu(pos):
@@ -430,13 +435,12 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 # self.load_gif(self.working_emoji.gif_path)
                 # self.update_video_list()
                 self.make_video_list()
-                self.load_gif(self.working_emoji.gif_path)
             else:
                 self.load_gif(self.working_emoji.gif_path)
             if self.working_emoji.resolution == '136x136':
-                self.loaded_136 = self.working_emoji
+                self.viewport_136.open_image(self.working_emoji)
             elif self.working_emoji.resolution == '280x280':
-                self.loaded_280 = self.working_emoji
+                self.viewport_280.open_image(self.working_emoji)
         self.list_videoslist.activated.connect(avi_activated)
 
         # Add acts from folder to list widget
@@ -459,7 +463,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             # print(photoshop_paths[0])
             if len(photoshop_paths) > 1:
                 logging.warning('Multiple Photoshop paths found, using {}'.format(photoshop_paths[0]))
-            files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
+            files, filtr = QFileDialog.getOpenFileNames(self,
                                                               "Choose your color table",
                                                               '{}'.format(photoshop_paths[0]),
                                                               "All Files (*.*);;A color table (*.act)",
@@ -472,17 +476,17 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             user_choice = None
             for file in files:
                 # If there is a file existing and if user has NOT clicked YesToAll ask him
-                if path.exists(path.join(path.abspath(self.working_directory), path.basename(file))) and user_choice != QtGui.QMessageBox.YesToAll:
-                    error_box = QtGui.QMessageBox()
+                if path.exists(path.join(path.abspath(self.working_directory), path.basename(file))) and user_choice != QMessageBox.YesToAll:
+                    error_box = QMessageBox()
                     error_box.setStyleSheet(self.styleSheet())
                     error_box.setWindowTitle('File error')
                     error_box.setText('The file {} exists in {}'.format(path.basename(file),
                                                                         path.abspath(self.working_directory)))
                     error_box.setInformativeText('Do you want to overwrite it?')
-                    error_box.setStandardButtons(QtGui.QMessageBox.YesToAll | QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                    error_box.setDefaultButton(QtGui.QMessageBox.No)
+                    error_box.setStandardButtons(QMessageBox.YesToAll | QMessageBox.Yes | QMessageBox.No)
+                    error_box.setDefaultButton(QMessageBox.No)
                     user_choice = error_box.exec_()
-                    if user_choice == QtGui.QMessageBox.Yes or user_choice == QtGui.QMessageBox.YesToAll:
+                    if user_choice == QMessageBox.Yes or user_choice == QMessageBox.YesToAll:
                         copy_act(file)
                 else:
                     copy_act(file)
@@ -492,7 +496,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             first_file = files[0]
             first_file_stripped = path.splitext(path.basename(first_file))[0]
             index = self.actlist_model.index(0)
-            index_of_first_item = self.actlist_model.match(index, QtCore.Qt.DisplayRole, first_file_stripped)
+            index_of_first_item = self.actlist_model.match(index, Qt.DisplayRole, first_file_stripped)
             if len(index_of_first_item):
                 index_of_first_item = index_of_first_item[0].row()
                 self.dropdown_colortable.setCurrentIndex(index_of_first_item)
@@ -510,7 +514,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 else:
                     error_message = 'Please import one color_palette.act inside \n{}'.format(self.working_directory)
                 logging.warning(error_message.replace('\n', ''))
-                error_box = QtGui.QMessageBox()
+                error_box = QMessageBox()
                 error_box.setStyleSheet(stylesheet.houdini)
                 error_box.setWindowTitle('File error')
                 error_box.setText('There is .act file missing'+' '*50)
@@ -519,7 +523,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
                 return 1
 
             # Dictionary two lossy values from their interface spinners
-            lossy_dict = {'136': self.spin_quality136.text(), '280': self.spin_quality280.text()}
+            lossy_dict = {'136': self.viewport_136.spin_quality.text(), '280': self.viewport_280.spin_quality.text()}
             self.color_table = path.join('.\\temp', 'current_act.txt')
             # We generate a colormap from the colormap viewer window
             with open(self.color_table, 'w') as txt:
@@ -537,226 +541,230 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
             files_to_delete = files_in_folder(self.working_directory, 'avi')
             files_to_delete.extend(files_in_folder(self.working_directory, 'tmp'))
             files_to_delete_names = [path.basename(file) for file in files_to_delete]
-            box = QtGui.QMessageBox()
+            box = QMessageBox()
             box.setStyleSheet(self.styleSheet())
             # box_layout = box.layout()
             # box_layout.setColumnMinimumWidth(1,500)
-            # QtGui.QGridLayout.set
+            # QGridLayout.set
             box.setWindowTitle('Clean up')
             box.setText('You are about to delete: \n{}'.format('\n'.join(str(x) for x in files_to_delete_names)))
             box.setInformativeText('Are you sure?')
-            box.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            box.setDefaultButton(QtGui.QMessageBox.No)
+            box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            box.setDefaultButton(QMessageBox.No)
             user_choice = box.exec_()
-            if user_choice == QtGui.QMessageBox.Yes:
+            if user_choice == QMessageBox.Yes:
                 [send2trash(file) for file in files_to_delete]
 
-        self.btn_export.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.btn_export.setContextMenuPolicy(Qt.CustomContextMenu)
         @self.btn_export.customContextMenuRequested.connect
         def btn_input_folder_open_menu(pos):
-            self.slider_scale136.setValue(1)
-            self.slider_scale280.setValue(1)
-            self.minimal_size()
+            print(self.size())
+
+        # self.pbw = QWidget()
+        # self.progress_bar = QProgressBar()
+        # self.slider = QSlider()
+        # self.layout_fileops.addWidget(self.progress_bar)
+        # self.layout_fileops.addWidget(self.slider)
+        # self.slider.valueChanged.connect(lambda x: self.progress_bar.setValue(x))
+
 
         # ############################## MIDDLE COLUMN ############################### #
-
-        @self.btn_fb280.clicked.connect
-        def btn_fb280_clicked():
-            current_frame = self.movie280.currentFrameNumber()
-            self.movie280.jumpToFrame(0)
-            for i in range(current_frame - 1):
-                self.movie280.jumpToNextFrame()
-            fps = '\tFPS: ' + str(round(1000 / self.movie280.nextFrameDelay(), 2))
-            delay = '\tDelay: ' + str(self.movie280.nextFrameDelay())
-            frame_n = str(self.movie280.currentFrameNumber())
-            self.statusbar.showMessage('280px: Jumped to frame #' + frame_n + fps + delay)
-
-        @self.btn_playpause280.clicked.connect
-        def btn_playpause280_clicked():
-            if self.btn_playpause280.isChecked():
-                self.movie280.setPaused(True)
-                self.statusbar.showMessage('280px: Paused on frame #' + str(self.movie280.currentFrameNumber()))
-            else:
-                self.movie280.setPaused(False)
-                self.statusbar.showMessage('280px: Playing')
-
-        @self.btn_ff280.clicked.connect
-        def btn_ff280_clicked():
-            self.movie280.jumpToNextFrame()
-            fps = '\tFPS: ' + str(round(1000 / self.movie280.nextFrameDelay(), 2))
-            delay = '\tDelay: ' + str(self.movie280.nextFrameDelay())
-            frame_n = str(self.movie280.currentFrameNumber())
-            self.statusbar.showMessage('280px: Jumped to frame #' + frame_n + fps + delay)
-
-        @self.slider_speed280.valueChanged.connect
-        def speed280_slider_changed(value):
-            self.statusbar.showMessage('Speed of 280px changed to {}x'.format(value/100))
-            self.spin_speed280.blockSignals(True)
-            self.spin_speed280.setValue(value * 0.01)
-            self.spin_speed280.blockSignals(False)
-            self.movie280.setSpeed(value)
-
-        @self.spin_speed280.valueChanged.connect
-        def speed280_spinner_changed(value):
-            value = round(value, 2)
-            self.statusbar.showMessage('Speed of 280px changed to {}x'.format(value))
-            value *= 100
-            self.slider_speed280.setValue(value)
-            self.movie280.setSpeed(value)
-
-        self.previous_scale280 = self.spin_scale280.value()
-        @self.spin_scale280.valueChanged.connect
-        def spin_scale280_value_changed(value):
-            self.statusbar.showMessage('Zoom of 280px changed to {}x'.format(value))
-            self.graphicsView_280.scale(1/self.previous_scale280, 1/self.previous_scale280)
-            self.graphicsView_280.scale(value, value)
-            self.slider_scale280.setValue(value)
-            self.previous_scale280 = self.spin_scale280.value()
-
-        self.spin_scale280.valueChanged.emit(self.spin_scale280.value())
-
-        @self.spin_quality280.valueChanged.connect
-        def spin_quality280_value_changed():
-            if self.check_livepreview280.isChecked():
-                btn_update280_clicked()
-
-        def btn_update280_clicked():
-            # working_file = self.movie280.fileName()
-            working_file = self.loaded_280.gif_path
-            print(working_file)
-            output_file = path.splitext(working_file)[0] + '.tmp'
-            self.movie280.stop()
-            lossy_factor = self.spin_quality280.text()
-            # Instead of generating a txt file for a colortable
-            # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            self.color_table = path.join('.\\temp', 'current_act.txt')
-            # We generate a colormap from the colormap viewer window
-            with open(self.color_table, 'w') as txt:
-                txt.writelines(self.plaintext_act_readout.toPlainText())
-            color_table = self.color_table
-
-            # self.btn_update280.setEnabled(False)
-            self.gc = GifSicle(self.loaded_280, lossy_factor, color_table)
-            # self.gc = GifSicle() todo разобраться что происходит тут
-            # self.gc.return_signal.connect(lambda x: print(x))
-            # self.gc.add(self.working_emoji, lossy_factor, color_table)
-            # self.gc.run()
-            # .return_signal.connect(self.console_add)
-
-            self.load_gif(output_file)
-            temp_file_size = path.getsize(output_file)/1024
-            self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
-        self.btn_update280.clicked.connect(btn_update280_clicked)
-
-        # ############################### RIGHT COLUMN ############################### #
-
-        # Load the color table viewer
-        if len(default_project_folder):
-            files = files_in_folder(self.working_directory, 'act')
-            if len(files):
-                self.load_act(files[self.dropdown_colortable.currentIndex()])
-
-        @self.btn_fb136.clicked.connect
-        def btn_fb136_clicked():
-            current_frame = self.movie136.currentFrameNumber()
-            self.movie136.jumpToFrame(0)
-            for i in range(current_frame - 1):
-                self.movie136.jumpToNextFrame()
-            fps = '\tFPS: ' + str(round(1000 / self.movie136.nextFrameDelay(), 2))
-            delay = '\tDelay: ' + str(self.movie136.nextFrameDelay())
-            frame_n = str(self.movie136.currentFrameNumber())
-            self.statusbar.showMessage('136px: Jumped to frame #' + frame_n + fps + delay)
-
-        @self.btn_playpause136.clicked.connect
-        def btn_playpause136_clicked():
-            if self.btn_playpause136.isChecked():
-                self.movie136.setPaused(True)
-                self.statusbar.showMessage('136px: Paused on frame #' + str(self.movie136.currentFrameNumber()))
-            else:
-                self.movie136.setPaused(False)
-                self.statusbar.showMessage('136px: Playing')
-
-        @self.btn_ff136.clicked.connect
-        def btn_ff136_clicked():
-            self.movie136.jumpToNextFrame()
-            fps = '\tFPS: ' + str(round(1000 / self.movie136.nextFrameDelay(), 2))
-            delay = '\tDelay: ' + str(self.movie136.nextFrameDelay())
-            frame_n = str(self.movie136.currentFrameNumber())
-            self.statusbar.showMessage('136px: Jumped to frame #' + frame_n + fps + delay)
-
-        @self.slider_speed136.valueChanged.connect
-        def speed136_slider_changed(value):
-            self.statusbar.showMessage('Speed of 136px changed to {}x'.format(value/100))
-            self.spin_speed136.blockSignals(True)
-            self.spin_speed136.setValue(value * 0.01)
-            self.spin_speed136.blockSignals(False)
-            self.movie136.setSpeed(value)
-
-        @self.spin_speed136.valueChanged.connect
-        def speed136_spinner_changed(value):
-            value = round(value, 2)
-            self.statusbar.showMessage('Speed of 136px changed to {}x'.format(value))
-            value *= 100
-            self.slider_speed136.setValue(value)
-            self.movie136.setSpeed(value)
-
-        self.previous_scale136 = self.spin_scale136.value()
-        @self.spin_scale136.valueChanged.connect
-        def spin_scale136_value_changed(value):
-            self.statusbar.showMessage('Zoom of 136px changed to {}x'.format(value))
-            self.graphicsView_136.scale(1/self.previous_scale136, 1/self.previous_scale136)
-            self.graphicsView_136.scale(value, value)
-            self.slider_scale136.setValue(value)
-            self.previous_scale136 = self.spin_scale136.value()
-        self.spin_scale136.valueChanged.emit(self.spin_scale136.value())
-
-        @self.spin_quality136.valueChanged.connect
-        def spin_quality136_value_changed():
-            if self.check_livepreview136.isChecked():
-                btn_update136_clicked()
-
-        def btn_update136_clicked():
-            # working_file = self.movie136.fileName()
-            working_file = self.loaded_136.gif_path
-            output_file = path.splitext(working_file)[0] + '.tmp'
-            self.movie136.stop()
-            lossy_factor = self.spin_quality136.text()
-            # Instead of generating a txt file for a colortable
-            # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            self.color_table = path.join('.\\temp', 'current_act.txt')
-            # We generate a colormap from the colormap viewer window
-            with open(self.color_table, 'w') as txt:
-                txt.writelines(self.plaintext_act_readout.toPlainText())
-            color_table = self.color_table
-
-            GifSicle(self.loaded_136, lossy_factor, color_table)
-            self.load_gif(output_file)
-            temp_file_size = path.getsize(output_file)/1024
-            self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
-        self.btn_update136.clicked.connect(btn_update136_clicked)
-
-        self.gifplayer136_widget = QtGui.QWidget()
-        self.gifplayer136 = QtGui.QLabel(self.gifplayer136_widget)
-        self.gifplayer136.setMinimumSize(QtCore.QSize(136, 136))
-
-        self.graphics_scene_136 = QtGui.QGraphicsScene()
-        self.graphicsView_136.setScene(self.graphics_scene_136)
-        self.graphicsView_136.setInteractive(1)
-
-        self.graphics_scene_136.addWidget(self.gifplayer136_widget)
-        self.graphicsView_136.scale(2, 2)
-
-        self.gifplayer280_widget = QtGui.QWidget()
-        self.gifplayer280 = QtGui.QLabel(self.gifplayer280_widget)
-        self.gifplayer280.setMinimumSize(QtCore.QSize(280, 280))
-
-        self.graphics_scene_280 = QtGui.QGraphicsScene()
-        self.graphicsView_280.setScene(self.graphics_scene_280)
-        self.graphicsView_280.setInteractive(1)
-
-        self.graphics_scene_280.addWidget(self.gifplayer280_widget)
-        self.graphicsView_280.scale(2, 2)
-
+        # @self.btn_fb280.clicked.connect
+        # def btn_fb280_clicked():
+        #     current_frame = self.movie280.currentFrameNumber()
+        #     self.movie280.jumpToFrame(0)
+        #     for i in range(current_frame - 1):
+        #         self.movie280.jumpToNextFrame()
+        #     fps = '\tFPS: ' + str(round(1000 / self.movie280.nextFrameDelay(), 2))
+        #     delay = '\tDelay: ' + str(self.movie280.nextFrameDelay())
+        #     frame_n = str(self.movie280.currentFrameNumber())
+        #     self.statusbar.showMessage('280px: Jumped to frame #' + frame_n + fps + delay)
+        #
+        # @self.btn_playpause280.clicked.connect
+        # def btn_playpause280_clicked():
+        #     if self.btn_playpause280.isChecked():
+        #         self.movie280.setPaused(True)
+        #         self.statusbar.showMessage('280px: Paused on frame #' + str(self.movie280.currentFrameNumber()))
+        #     else:
+        #         self.movie280.setPaused(False)
+        #         self.statusbar.showMessage('280px: Playing')
+        #
+        # @self.btn_ff280.clicked.connect
+        # def btn_ff280_clicked():
+        #     self.movie280.jumpToNextFrame()
+        #     fps = '\tFPS: ' + str(round(1000 / self.movie280.nextFrameDelay(), 2))
+        #     delay = '\tDelay: ' + str(self.movie280.nextFrameDelay())
+        #     frame_n = str(self.movie280.currentFrameNumber())
+        #     self.statusbar.showMessage('280px: Jumped to frame #' + frame_n + fps + delay)
+        #
+        # @self.slider_speed280.valueChanged.connect
+        # def speed280_slider_changed(value):
+        #     self.statusbar.showMessage('Speed of 280px changed to {}x'.format(value/100))
+        #     self.spin_speed280.blockSignals(True)
+        #     self.spin_speed280.setValue(value * 0.01)
+        #     self.spin_speed280.blockSignals(False)
+        #     self.movie280.setSpeed(value)
+        #
+        # @self.spin_speed280.valueChanged.connect
+        # def speed280_spinner_changed(value):
+        #     value = round(value, 2)
+        #     self.statusbar.showMessage('Speed of 280px changed to {}x'.format(value))
+        #     value *= 100
+        #     self.slider_speed280.setValue(value)
+        #     self.movie280.setSpeed(value)
+        #
+        # self.previous_scale280 = self.spin_scale280.value()
+        # @self.spin_scale280.valueChanged.connect
+        # def spin_scale280_value_changed(value):
+        #     self.statusbar.showMessage('Zoom of 280px changed to {}x'.format(value))
+        #     self.graphicsView_280.scale(1/self.previous_scale280, 1/self.previous_scale280)
+        #     self.graphicsView_280.scale(value, value)
+        #     self.slider_scale280.setValue(value)
+        #     self.previous_scale280 = self.spin_scale280.value()
+        #
+        # self.spin_scale280.valueChanged.emit(self.spin_scale280.value())
+        #
+        # @self.spin_quality280.valueChanged.connect
+        # def spin_quality280_value_changed():
+        #     if self.check_livepreview280.isChecked():
+        #         btn_update280_clicked()
+        #
+        # def btn_update280_clicked():
+        #     # working_file = self.movie280.fileName()
+        #     working_file = self.loaded_280.gif_path
+        #     print(working_file)
+        #     output_file = path.splitext(working_file)[0] + '.tmp'
+        #     self.movie280.stop()
+        #     lossy_factor = self.spin_quality280.text()
+        #     # Instead of generating a txt file for a colortable
+        #     # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+        #     self.color_table = path.join('.\\temp', 'current_act.txt')
+        #     # We generate a colormap from the colormap viewer window
+        #     with open(self.color_table, 'w') as txt:
+        #         txt.writelines(self.plaintext_act_readout.toPlainText())
+        #     color_table = self.color_table
+        #
+        #     # self.btn_update280.setEnabled(False)
+        #     self.gc = GifSicle(self.loaded_280, lossy_factor, color_table)
+        #     # self.gc = GifSicle() todo разобраться что происходит тут
+        #     # self.gc.return_signal.connect(lambda x: print(x))
+        #     # self.gc.add(self.working_emoji, lossy_factor, color_table)
+        #     # self.gc.run()
+        #     # .return_signal.connect(self.console_add)
+        #
+        #     self.load_gif(output_file)
+        #     temp_file_size = path.getsize(output_file)/1024
+        #     self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
+        # self.btn_update280.clicked.connect(btn_update280_clicked)
+        #
+        # # ############################### RIGHT COLUMN ############################### #
+        #
+        # # Load the color table viewer
+        # if len(default_project_folder):
+        #     files = files_in_folder(self.working_directory, 'act')
+        #     if len(files):
+        #         self.load_act(files[self.dropdown_colortable.currentIndex()])
+        #
+        # @self.btn_fb136.clicked.connect
+        # def btn_fb136_clicked():
+        #     current_frame = self.movie136.currentFrameNumber()
+        #     self.movie136.jumpToFrame(0)
+        #     for i in range(current_frame - 1):
+        #         self.movie136.jumpToNextFrame()
+        #     fps = '\tFPS: ' + str(round(1000 / self.movie136.nextFrameDelay(), 2))
+        #     delay = '\tDelay: ' + str(self.movie136.nextFrameDelay())
+        #     frame_n = str(self.movie136.currentFrameNumber())
+        #     self.statusbar.showMessage('136px: Jumped to frame #' + frame_n + fps + delay)
+        #
+        # @self.btn_playpause136.clicked.connect
+        # def btn_playpause136_clicked():
+        #     if self.btn_playpause136.isChecked():
+        #         self.movie136.setPaused(True)
+        #         self.statusbar.showMessage('136px: Paused on frame #' + str(self.movie136.currentFrameNumber()))
+        #     else:
+        #         self.movie136.setPaused(False)
+        #         self.statusbar.showMessage('136px: Playing')
+        #
+        # @self.btn_ff136.clicked.connect
+        # def btn_ff136_clicked():
+        #     self.movie136.jumpToNextFrame()
+        #     fps = '\tFPS: ' + str(round(1000 / self.movie136.nextFrameDelay(), 2))
+        #     delay = '\tDelay: ' + str(self.movie136.nextFrameDelay())
+        #     frame_n = str(self.movie136.currentFrameNumber())
+        #     self.statusbar.showMessage('136px: Jumped to frame #' + frame_n + fps + delay)
+        #
+        # @self.slider_speed136.valueChanged.connect
+        # def speed136_slider_changed(value):
+        #     self.statusbar.showMessage('Speed of 136px changed to {}x'.format(value/100))
+        #     self.spin_speed136.blockSignals(True)
+        #     self.spin_speed136.setValue(value * 0.01)
+        #     self.spin_speed136.blockSignals(False)
+        #     self.movie136.setSpeed(value)
+        #
+        # @self.spin_speed136.valueChanged.connect
+        # def speed136_spinner_changed(value):
+        #     value = round(value, 2)
+        #     self.statusbar.showMessage('Speed of 136px changed to {}x'.format(value))
+        #     value *= 100
+        #     self.slider_speed136.setValue(value)
+        #     self.movie136.setSpeed(value)
+        #
+        # self.previous_scale136 = self.spin_scale136.value()
+        # @self.spin_scale136.valueChanged.connect
+        # def spin_scale136_value_changed(value):
+        #     self.statusbar.showMessage('Zoom of 136px changed to {}x'.format(value))
+        #     self.graphicsView_136.scale(1/self.previous_scale136, 1/self.previous_scale136)
+        #     self.graphicsView_136.scale(value, value)
+        #     self.slider_scale136.setValue(value)
+        #     self.previous_scale136 = self.spin_scale136.value()
+        # self.spin_scale136.valueChanged.emit(self.spin_scale136.value())
+        #
+        # @self.spin_quality136.valueChanged.connect
+        # def spin_quality136_value_changed():
+        #     if self.check_livepreview136.isChecked():
+        #         btn_update136_clicked()
+        #
+        # def btn_update136_clicked():
+        #     # working_file = self.movie136.fileName()
+        #     working_file = self.loaded_136.gif_path
+        #     output_file = path.splitext(working_file)[0] + '.tmp'
+        #     self.movie136.stop()
+        #     lossy_factor = self.spin_quality136.text()
+        #     # Instead of generating a txt file for a colortable
+        #     # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+        #     self.color_table = path.join('.\\temp', 'current_act.txt')
+        #     # We generate a colormap from the colormap viewer window
+        #     with open(self.color_table, 'w') as txt:
+        #         txt.writelines(self.plaintext_act_readout.toPlainText())
+        #     color_table = self.color_table
+        #
+        #     GifSicle(self.loaded_136, lossy_factor, color_table)
+        #     self.load_gif(output_file)
+        #     temp_file_size = path.getsize(output_file)/1024
+        #     self.statusbar.showMessage('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
+        # self.btn_update136.clicked.connect(btn_update136_clicked)
+        #
+        # self.gifplayer136_widget = QWidget()
+        # self.gifplayer136 = QLabel(self.gifplayer136_widget)
+        # self.gifplayer136.setMinimumSize(QSize(136, 136))
+        #
+        # self.graphics_scene_136 = QGraphicsScene()
+        # self.graphicsView_136.setScene(self.graphics_scene_136)
+        # self.graphicsView_136.setInteractive(1)
+        #
+        # self.graphics_scene_136.addWidget(self.gifplayer136_widget)
+        # self.graphicsView_136.scale(2, 2)
+        #
+        # self.gifplayer280_widget = QWidget()
+        # self.gifplayer280 = QLabel(self.gifplayer280_widget)
+        # self.gifplayer280.setMinimumSize(QSize(280, 280))
+        #
+        # self.graphics_scene_280 = QGraphicsScene()
+        # self.graphicsView_280.setScene(self.graphics_scene_280)
+        # self.graphicsView_280.setInteractive(1)
+        #
+        # self.graphics_scene_280.addWidget(self.gifplayer280_widget)
+        # self.graphicsView_280.scale(2, 2)
     def make_video_list(self, folder=None, ext='avi'):
         # If no folder specified, update the current working directory
         if not folder:
@@ -798,7 +806,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.statusbar.showMessage('"' + act_file + '"' + ' contains {} color(s)'.format(act[1]))
         if act[1] > 256:
             error_msg = corrupted_palette(act_file)
-            QtGui.QMessageBox.warning(self, *error_msg)
+            QMessageBox.warning(self, *error_msg)
         return act
 
     def load_gif(self, gif_path: str) -> None:
@@ -822,7 +830,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.btn_ff280.setEnabled(True)          # Enable forward button
         self.layout_gif280.setTitle(path.split(file280)[1])  # Set name of the gif as the title
         self.movie280.setFileName('')  # Free (close) the previous loaded image
-        self.movie280 = QtGui.QMovie(file280)  # Create a QMovie instance
+        self.movie280 = QMovie(file280)  # Create a QMovie instance
         self.gifplayer280.setMovie(self.movie280)  # And assign it to the player widget
         self.movie280.setSpeed(self.spin_speed280.value()*100)  # Automatically set speed using the speed spinner
         self.movie280.start()
@@ -835,7 +843,7 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.btn_ff136.setEnabled(True)          # Enable forward button
         self.layout_gif136.setTitle(path.split(file136)[1])  # Set name of the gif as the title
         self.movie136.setFileName('')  # Free (close) the previous loaded image
-        self.movie136 = QtGui.QMovie(file136)  # Create a QMovie instance
+        self.movie136 = QMovie(file136)  # Create a QMovie instance
         self.gifplayer136.setMovie(self.movie136)  # And assign it to the player widget
         self.movie136.setSpeed(self.spin_speed136.value()*100)  # Automatically set speed using the speed spinner
         self.movie136.start()
@@ -849,8 +857,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         :type palette: str
         :param palette: Full path to the image, you want to load.
         """
-        pixmap = QtGui.QPixmap(palette)
-        pixmap = pixmap.scaled(136, 136, mode=QtCore.Qt.FastTransformation)
+        pixmap = QPixmap(palette)
+        pixmap = pixmap.scaled(136, 136, mode=Qt.FastTransformation)
         self.gifplayer136.setPixmap(pixmap)
         # self.gifplayer136.scaled todo
         # self.gifplayer136.setScaledContents(True) todo
@@ -859,8 +867,8 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
         self.console.append(str(log_input))#.rstrip())
 
     def convert_mov_to_mp4(self):
-        print(QtGui.QFileDialog())
-        files, filtr = QtGui.QFileDialog.getOpenFileNames(self,
+        print(QFileDialog())
+        files, filtr = QFileDialog.getOpenFileNames(self,
                                                           "Choose your files for conversion", '.',
                                                           "All Files (*.*);;MOV (*.mov)", "MOV (*.mov)")
         print(files, filtr)
@@ -871,10 +879,19 @@ class QtMainWindow(QtGui.QMainWindow, MainWindow_UI.Ui_MainWindow):
     def minimal_size(self):
         self.resize(0, 0)
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_ScrollLock:
+            self.viewport_136.scroll_lock = not self.viewport_136.scroll_lock
+            self.viewport_280.scroll_lock = not self.viewport_280.scroll_lock
+            self.viewport_136.check_embedded()
+            self.viewport_280.check_embedded()
+        else:
+            super(QtMainWindow, self).keyPressEvent(event)
+
 
 if __name__ == '__main__':
 
-    app = QtGui.QApplication([])
+    app = QApplication([])
     MainWindowObj = QtMainWindow()
     MainWindowObj.show()
 

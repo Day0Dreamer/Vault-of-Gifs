@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Python\Vault_Of_Gifs\widgets\viewport.ui'
+# Form implementation generated from reading ui file 'C:\Python\Giftcher\widgets\viewport.ui'
 #
-# Created: Tue Feb 13 12:52:11 2018
+# Created: Tue Feb 20 13:21:50 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(411, 540)
-        self.main_layout = QtGui.QVBoxLayout(Form)
+class Ui_viewport_masterQW(object):
+    def setupUi(self, viewport_masterQW):
+        viewport_masterQW.setObjectName("viewport_masterQW")
+        viewport_masterQW.resize(411, 540)
+        self.main_layout = QtGui.QVBoxLayout(viewport_masterQW)
         self.main_layout.setSpacing(0)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setObjectName("main_layout")
-        self.layout_viewport = QtGui.QGroupBox(Form)
+        self.layout_viewport = QtGui.QGroupBox(viewport_masterQW)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -145,18 +145,18 @@ class Ui_Form(object):
         self.verticalLayout.addWidget(self.check_livepreview)
         self.main_layout.addWidget(self.layout_viewport)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(viewport_masterQW)
+        QtCore.QMetaObject.connectSlotsByName(viewport_masterQW)
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.layout_viewport.setTitle(QtGui.QApplication.translate("Form", "_x_ px", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_fb.setText(QtGui.QApplication.translate("Form", "", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_playpause.setText(QtGui.QApplication.translate("Form", "⏵/⏸", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_ff.setText(QtGui.QApplication.translate("Form", "", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_speed.setText(QtGui.QApplication.translate("Form", "Speed", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_quality.setText(QtGui.QApplication.translate("Form", "Lossy", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_update.setText(QtGui.QApplication.translate("Form", "Update", None, QtGui.QApplication.UnicodeUTF8))
-        self.check_livepreview.setText(QtGui.QApplication.translate("Form", "Auto update", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self, viewport_masterQW):
+        viewport_masterQW.setWindowTitle(QtGui.QApplication.translate("viewport_masterQW", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.layout_viewport.setTitle(QtGui.QApplication.translate("viewport_masterQW", "_x_ px", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_fb.setText(QtGui.QApplication.translate("viewport_masterQW", "", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_playpause.setText(QtGui.QApplication.translate("viewport_masterQW", "⏵/⏸", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_ff.setText(QtGui.QApplication.translate("viewport_masterQW", "", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_speed.setText(QtGui.QApplication.translate("viewport_masterQW", "Speed", None, QtGui.QApplication.UnicodeUTF8))
+        self.lbl_quality.setText(QtGui.QApplication.translate("viewport_masterQW", "Lossy", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_update.setText(QtGui.QApplication.translate("viewport_masterQW", "Update", None, QtGui.QApplication.UnicodeUTF8))
+        self.check_livepreview.setText(QtGui.QApplication.translate("viewport_masterQW", "Auto update", None, QtGui.QApplication.UnicodeUTF8))
 
 from widgets.viewport_viewer import Viewer

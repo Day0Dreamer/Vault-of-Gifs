@@ -1,53 +1,55 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
+import logging
 from os import path
 from emoji import Emoji
+from gifsicle import GifSicle
 from messages import *
-from update_image import *
 
 from widgets import viewport_ui
 
 DEFAULT_SCALE = 2
+logger = logging.getLogger(__name__)
 
 
-class Viewport(QWidget, viewport_ui.Ui_Form):
+class Viewport(QWidget, viewport_ui.Ui_viewport_masterQW):
 
     TO_STATUS_BAR = Signal(str)
 
-    def __init__(self):
+    def __init__(self, embedded):
         super(Viewport, self).__init__()
 
         self.setupUi(self)
 
         self.movie = QMovie()
         self.opened_image = None
-        self.previous_scale = DEFAULT_SCALE
+        self.previous_scale = 1
         self.flag1 = False
-
+        self.color_table = None
+        self.embedded = not bool(embedded)                                               # Has NOT a parent widget?
+        self.scroll_lock = False
         self.graphics_scene = QGraphicsScene()                                           # Create a scene
         self.graphicsView.setScene(self.graphics_scene)                                  # Start watching at the scene
 
         self.gif_player_widget = QWidget()                                               # Setup a QWidget
         self.gif_player = QLabel(self.gif_player_widget)                                 # Add QLabel to the QWidget
-        gif_player_proxy_widget = self.graphics_scene.addWidget(self.gif_player_widget)  # Add QWidget to scene
-        self.gif_player_widget = gif_player_proxy_widget.widget()                        # Get new handle to QWidget
-        self.gif_player = self.gif_player_widget.children()[0]                           # Get new handle to QLabel
+        self.gif_player.setAlignment(Qt.AlignCenter)                                     # Tell QLabel to center itself
+        self.gif_player.setStyleSheet("background-color:transparent;");
+        self.gif_player.setParent(None)
+        self.gif_player_proxy_widget = self.graphics_scene.addWidget(self.gif_player)         # Add QWidget to scene
 
         self.graphicsView.PLAYPAUSE.connect(lambda: self.btn_playpause.toggle())
         self.TO_STATUS_BAR.connect(lambda x: print(x))
 
+        self.load(r"icons\nofileloaded.png", zoom=1)
+
         @self.graphicsView.MOUSEWHEEL.connect
         def wheel_zoom(up):
             if up:
-                change_zoom_by(1)
+                self.change_zoom_by(1)
             else:
-                change_zoom_by(-1)
+                self.change_zoom_by(-1)
 
-        def change_zoom_by(value):
-            self.TO_STATUS_BAR.emit('Zoom of px changed to {}x'.format(value))
-            self.graphicsView.scale(1/self.previous_scale, 1/self.previous_scale)
-            self.previous_scale = max(self.previous_scale + value, 1)
-            self.graphicsView.scale(self.previous_scale, self.previous_scale)
 
         @self.graphicsView.TIME_OFFSET.connect
         def time_scroll(mouse_offset):
@@ -115,30 +117,65 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
                 btn_update_clicked()
 
         def btn_update_clicked():
-            if isinstance(self.opened_image, Emoji):
-                working_file = self.opened_image.gif_path
-                output_file = self.opened_image.temp_path
-            if isinstance(self.opened_image, str):
-                working_file = self.opened_image
-                output_file = path.splitext(working_file)[0] + '.tmp'
-            self.movie.stop()
-            lossy_factor = self.spin_quality.text()
-            # Instead of generating a txt file for a colortable
-            # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
-            color_table_path = path.join('.', 'current_act.txt')
-            # We generate a colormap from the colormap viewer window
-            with open(color_table_path, 'w') as txt:
-                txt.writelines(self.plaintext_act_readout.toPlainText())
-            color_table = self.color_table
+            if self.embedded or self.scroll_lock:
+                f = QFileDialog.getOpenFileName(self, 'Select image to load', '.', "All Files (*.*)", "All Files (*.*)")
+                if f:
+                    self.load(f[0])
+            else:
+                if isinstance(self.opened_image, str):  # If we give a string it makes it to Emoji
+                    self.opened_image = Emoji(self.opened_image)
+                if isinstance(self.opened_image, Emoji):
+                    working_file = self.opened_image.gif_path
+                    output_file = self.opened_image.temp_path
+                else:
+                    raise ValueError('Update button received not Emoji or str')
+                self.movie.stop()
+                lossy_factor = self.spin_quality.text()
+                # Instead of generating a txt file for a colortable
+                # color_table = act_reader.create_gifsicle_colormap(self.dropdown_colortable.currentText())
+                color_table_path = path.join('.', 'current_act.txt')
 
-            self.gc = GifSicle(self.loaded_, lossy_factor, color_table)
+                # Get a handle on color table QPlainTextEdit
 
-            self.load_gif(output_file)
-            temp_file_size = path.getsize(output_file)/1024
-            self.TO_STATUS_BAR.emit('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
+                plaintext_act_readout = self.parentWidget().findChildren(QPlainTextEdit, 'plaintext_act_readout')[0]
+                # We generate a colormap from the colormap viewer window
+                with open(color_table_path, 'w') as txt:
+                    txt.writelines(plaintext_act_readout.toPlainText())
+
+                self.gc = GifSicle(self.opened_image, lossy_factor, color_table_path)
+                print(self.gc, self.opened_image, lossy_factor, color_table_path)
+
+                self.load(output_file)
+                temp_file_size = path.getsize(output_file)/1024
+                self.TO_STATUS_BAR.emit('Resulting filesize is: {:.2f} Kb'.format(temp_file_size))
         self.btn_update.clicked.connect(btn_update_clicked)
+        self.check_embedded()
 
-        # self.graphicsView.scale(2, 2)
+    def check_embedded(self):
+        if self.embedded or self.scroll_lock:                                                                  # Override update button
+            self.btn_update.setText('Load')
+            # self.btn_update.clicked.connect(self.btn_update_clicked_load_override)
+            # self.btn_update.clicked.disconnect(self.btn_update_clicked)
+        else:
+            self.btn_update.setText('Update')
+            # self.btn_update.clicked.connect(self.btn_update_clicked)
+            # self.btn_update.clicked.disconnect(self.btn_update_clicked_load_override)
+
+
+
+
+    def change_zoom_by(self, value):
+        self.TO_STATUS_BAR.emit('Zoom was {}'.format(self.previous_scale))
+        self.graphicsView.scale(1/self.previous_scale, 1/self.previous_scale)
+        self.previous_scale = max(self.previous_scale + value, 1)
+        self.graphicsView.scale(self.previous_scale, self.previous_scale)
+        self.TO_STATUS_BAR.emit('Zoom of px changed to {}x'.format(self.previous_scale))
+
+    def reset_zoom(self):
+        self.graphicsView.scale(1/self.previous_scale, 1/self.previous_scale)
+        self.previous_scale = 1
+        return self.previous_scale
+
 
     def open_image(self, input_):
         """
@@ -161,16 +198,20 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
             # todo test this
             return False
 
-    def load(self, file: str):
+    def load(self, file: str, zoom=DEFAULT_SCALE):
         """
         This method loads an image to the viewer based on str full path to it
 
         :param file: Image path
+        :param zoom: If defined, sets the initial zoom
         :return: If loaded movie is valid and functional
         """
         image_dimensions = QImage(file).size()                      # Get image size
-        self.gif_player_widget.setMinimumSize(image_dimensions)     # Set widget's size to image's size
-        self.gif_player.setMinimumSize(image_dimensions)            # Set QLabel's size to image's size
+        self.graphics_scene.setSceneRect(image_dimensions.width()*-.5,image_dimensions.height()*-.5,image_dimensions.width(),image_dimensions.height())
+        self.gif_player_proxy_widget.setMaximumSize(image_dimensions)     # Set widget's size to image's size
+        self.gif_player.setFixedSize(image_dimensions)            # Set QLabel's size to image's size
+        self.gif_player.move(image_dimensions.width()*-.5,image_dimensions.height()*-.5)
+        self.change_zoom_by(zoom - self.reset_zoom())
         self.btn_playpause.setChecked(False)                    # Unpress the play-pause button
         self.btn_fb.setEnabled(True)                            # Enable back button
         self.btn_playpause.setEnabled(True)                     # Enable play-pause button
@@ -181,12 +222,18 @@ class Viewport(QWidget, viewport_ui.Ui_Form):
         self.gif_player.setMovie(self.movie)                    # And assign it to the player widget
         self.movie.setSpeed(self.spin_speed.value()*100)        # Automatically set speed using the speed spinner
         self.movie.start()
+        self.graphicsView.updateGeometry()
         return self.movie.isValid()
+
+    def unload_image(self):
+        self.movie.stop()
+        self.load(r"icons\nofileloaded.png")
+        self.reset_zoom()
 
 
 if __name__ == '__main__':
     app = QApplication([])
-    vp = Viewport()
+    vp = Viewport(embedded=False)
     vp.show()
-    vp.open_image(Emoji("C:\Python\Vault_Of_Gifs\Fanatics-animated-emoji-07\Fanatics-animated-emoji-07_280x280_15fps_LOSSY.gif"))
+    # vp.open_image(Emoji("C:\Python\Giftcher\BrandinCooksEmojiTest_01\BrandinCooksEmojiTest_01_280x280_30fps.gif"))
     app.exec_()

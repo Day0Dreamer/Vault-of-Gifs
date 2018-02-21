@@ -29,8 +29,8 @@ def create_gifsicle_colormap(act_file, output=None):
     :return: Returns the resulting txt file's path
     """
     if output is None:
-        makedirs(path.join(curdir, 'temp'), exist_ok=True)
-        output = path.join(path.curdir, 'temp', path.splitext(path.split(act_file)[1])[0] + '.txt')
+        # makedirs(path.join(curdir, 'temp'), exist_ok=True)
+        output = path.join(path.curdir, path.splitext(path.split(act_file)[1])[0] + '.txt')
     with open(output, 'w') as txt:
         txt.writelines(act_to_list(act_file)[0])
     return output

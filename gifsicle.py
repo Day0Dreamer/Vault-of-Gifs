@@ -18,6 +18,7 @@ config = Config()
 conf_damaged_filesize = int(config()['damaged_filesize'])*1024
 logger = logging.getLogger(__name__)
 
+
 class GifSicle(QObject):
     return_signal = Signal(str)
     loop_done = Signal()

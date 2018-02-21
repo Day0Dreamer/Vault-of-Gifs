@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Python\Giftcher\widgets\MainWindow.ui'
 #
-# Created: Tue Feb 20 22:45:32 2018
+# Created: Wed Feb 21 02:31:59 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,6 +77,26 @@ class Ui_MainWindow(object):
         self.btn_export.setMinimumSize(QtCore.QSize(0, 49))
         self.btn_export.setObjectName("btn_export")
         self.layout_fileops.addWidget(self.btn_export)
+        self.progress_bar1 = QtGui.QProgressBar(self.layoutWidget)
+        self.progress_bar1.setProperty("value", 0)
+        self.progress_bar1.setObjectName("progress_bar1")
+        self.layout_fileops.addWidget(self.progress_bar1)
+        self.progress_bar2 = QtGui.QProgressBar(self.layoutWidget)
+        self.progress_bar2.setProperty("value", 0)
+        self.progress_bar2.setObjectName("progress_bar2")
+        self.layout_fileops.addWidget(self.progress_bar2)
+        self.progress_bar3 = QtGui.QProgressBar(self.layoutWidget)
+        self.progress_bar3.setProperty("value", 0)
+        self.progress_bar3.setObjectName("progress_bar3")
+        self.layout_fileops.addWidget(self.progress_bar3)
+        self.progress_bar4 = QtGui.QProgressBar(self.layoutWidget)
+        self.progress_bar4.setProperty("value", 0)
+        self.progress_bar4.setObjectName("progress_bar4")
+        self.layout_fileops.addWidget(self.progress_bar4)
+        self.progress_bar5 = QtGui.QProgressBar(self.layoutWidget)
+        self.progress_bar5.setProperty("value", 0)
+        self.progress_bar5.setObjectName("progress_bar5")
+        self.layout_fileops.addWidget(self.progress_bar5)
         self.btn_clean = QtGui.QPushButton(self.layoutWidget)
         self.btn_clean.setEnabled(False)
         self.btn_clean.setMinimumSize(QtCore.QSize(0, 49))

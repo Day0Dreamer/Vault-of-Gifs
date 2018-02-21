@@ -21,6 +21,11 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyCallByClass
 class Conversion(QObject):
+    conversion1 = Signal(int, int)
+    conversion2 = Signal(int, int)
+    conversion3 = Signal(int, int)
+    conversion4 = Signal(int, int)
+    conversion5 = Signal(int, int)
     conversion1_done = Signal()
     conversion2_done = Signal()
     conversion3_done = Signal()
@@ -28,9 +33,11 @@ class Conversion(QObject):
     conversion5_done = Signal()
     error = Signal(str)
 
-    def __init__(self, project_folder, lossy_factor, color_map=None):
+    def __init__(self):
         super(Conversion, self).__init__()
+        # self.true_init(project_folder, lossy_factor, color_map=None)
 
+    def true_init(self, project_folder, lossy_factor, color_map=None):
         self.project_folder = project_folder
         self.lossy_factor = lossy_factor
         # Use the first color map present in the project folder
@@ -68,16 +75,17 @@ class Conversion(QObject):
 
     def avis2gif(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
-        for item in emoji_dict.keys():
+        for index, item in enumerate(emoji_dict.keys()):
             # print(emoji_dict[item])
             if not emoji_dict[item].has_gif or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'gif file missing, creating one')
                 FFmpeg(emoji_dict[item])
+                self.conversion1.emit(index+1, len(emoji_dict)-1)
         QTimer.singleShot(1, self.conversion1_done)
 
     def gifs2lossy(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
-        for item in emoji_dict.keys():
+        for index, item in enumerate(emoji_dict.keys()):
             if not emoji_dict[item].has_lossy or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'lossy file missing, creating one')
                 # Get the proper lossy value for the gifsicle
@@ -86,13 +94,14 @@ class Conversion(QObject):
                 elif '280' in emoji_dict[item].resolution:
                     lossy_factor = self.lossy_factor['280']
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_lossy=True)
+                self.conversion2.emit(index+1, len(emoji_dict)-1)
             else:
                 print('Lossy file for {} already exists, skipping lossy creation'.format(emoji_dict[item].name))
         QTimer.singleShot(1, self.conversion2_done)
 
     def gifs2damaged(self):
         emoji_dict = {Emoji(emoji).filename: Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)}
-        for item in emoji_dict.keys():
+        for index, item in enumerate(emoji_dict.keys()):
             if not emoji_dict[item].has_damaged or settings.overwrite_gifs:
                 print(emoji_dict[item].name, 'damaged file missing, creating')
                 # Get the proper lossy value for the gifsicle
@@ -101,12 +110,15 @@ class Conversion(QObject):
                 elif '280' in emoji_dict[item].resolution:
                     lossy_factor = self.lossy_factor['280']
                 GifSicle(emoji_dict[item], lossy_factor, self.color_map, to_damaged=True)
+                self.conversion3.emit(index+1, len(emoji_dict)-1)
         QTimer.singleShot(1, self.conversion3_done)
 
     def handbrake(self):
         emoji_list = [Emoji(emoji) for emoji in self.files_in_folder(self.project_folder) if Emoji(emoji)]
         Handbrake(emoji_list[0])
+        self.conversion4.emit(1, 1)
         QTimer.singleShot(1, self.conversion4_done)
+
 
     def cleanup(self):
         all_temps = [temps for temps in self.files_in_folder(self.project_folder, 'tmp')]
@@ -125,6 +137,7 @@ class Conversion(QObject):
                     error_box.setWindowTitle('File error')
                     error_box.setText(error_message)
                     error_box.exec_()
+        self.conversion5.emit(1, 1)
         QTimer.singleShot(1, self.conversion5_done)
 
 

@@ -529,10 +529,20 @@ class QtMainWindow(QMainWindow, MainWindow_UI.Ui_MainWindow):
             with open(self.color_table, 'w') as txt:
                 txt.writelines(self.plaintext_act_readout.toPlainText())
             color_table = self.color_table
-            self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
+            # self.actionUnloadGifs.triggered.emit()  # Stop and unload playing gifs
+            self.viewport_280.unload_image()
+            self.viewport_136.unload_image()
             # Start export conversion using dir user selected and lossy dict
-            self.conversion = Conversion(self.working_directory, lossy_dict, color_table)
+            self.conversion = Conversion()
+            self.conversion.conversion1.connect(lambda i, t: self.progress_bar1.setValue(int(i/t*100)))
+            self.conversion.conversion2.connect(lambda i, t: self.progress_bar2.setValue(int(i/t*100)))
+            self.conversion.conversion3.connect(lambda i, t: self.progress_bar3.setValue(int(i/t*100)))
+            self.conversion.conversion4.connect(lambda i, t: self.progress_bar4.setValue(int(i/t*100)))
+            self.conversion.conversion5.connect(lambda i, t: self.progress_bar5.setValue(int(i/t*100)))
+
+            self.conversion.true_init(self.working_directory, lossy_dict, color_table)
             self.conversion.conversion5_done.connect(lambda: self.make_video_list(self.working_directory))
+
 
         @self.btn_clean.clicked.connect
         def clean():
@@ -560,12 +570,16 @@ class QtMainWindow(QMainWindow, MainWindow_UI.Ui_MainWindow):
         def btn_input_folder_open_menu(pos):
             print(self.size())
 
-        # self.pbw = QWidget()
-        # self.progress_bar = QProgressBar()
-        # self.slider = QSlider()
-        # self.layout_fileops.addWidget(self.progress_bar)
-        # self.layout_fileops.addWidget(self.slider)
-        # self.slider.valueChanged.connect(lambda x: self.progress_bar.setValue(x))
+        # self.progress_bar1 = QProgressBar()
+        # self.layout_fileops.addWidget(self.progress_bar1)
+        # self.progress_bar2 = QProgressBar()
+        # self.layout_fileops.addWidget(self.progress_bar2)
+        # self.progress_bar3 = QProgressBar()
+        # self.layout_fileops.addWidget(self.progress_bar3)
+        # self.progress_bar4 = QProgressBar()
+        # self.layout_fileops.addWidget(self.progress_bar4)
+        # self.progress_bar5 = QProgressBar()
+        # self.layout_fileops.addWidget(self.progress_bar5)
 
 
         # ############################## MIDDLE COLUMN ############################### #
